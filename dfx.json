@@ -1,0 +1,26 @@
+{
+  "canisters": {
+    "twinvest_backend": {
+      "main": "src/twinvest_backend/main.mo",
+      "type": "motoko"
+    },
+    "twinvest_frontend": {
+      "dependencies": [
+        "twinvest_backend"
+      ],
+      "source": [
+        "src/twinvest_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "twinvest_frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
