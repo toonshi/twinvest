@@ -1,11 +1,54 @@
-# `twinvest`
+# Twinvest
 
 ## Introduction
 
-A wallet for everybody, Post ( Job, description, payment offer, completed), anyone can pick a job, then request for payment. Anyone can post a job and approve payment. Thats 1 class, 2 structs, and a wallet connection yenye nitatoa icp ninja
+The project harnesses blockchain and DeFi to deliver a secure and transparent solution for invoice financing, empowering businesses and freelancers with improved cash flow.The invoice financing system enables Small and Medium-sized Enterprises (SMEs) to tokenize unpaid invoices as Non-Fungible Tokens (NFTs), allowing investors to purchase them for an early capital, with automated repayment via smart contracts.
+
+## Description
+
+A decentralized app that helps freelancers receive Bitcoin salaries by issuing invoice NFTs, which can optionally be financed by investors before being paid by clients. The entire process is transparent, verifiable, and runs fully on the Internet Computer (ICP).
+
+### How it works - role to role
+
+#### 👨‍💻 Freelancers
+
+Create Profile: Sign in with Internet Identity. Set up their Bitcoin address, skills, and past experience.
+
+Issue Invoice: After completing work, the freelancer creates an invoice. This invoice is minted as an NFT on ICP, containing:
+
+1. Amount due
+
+2. Due date
+
+3. Work description
+
+4. Client reference
+
+5. Get Paid in Bitcoin: If not financed, the freelancer waits for the client to pay directly to their BTC wallet when the invoice is due.
+
+#### 🧑‍💼 Clients
+
+1. Hire & Approve Work: After a job is done, they approve the invoice submitted by the freelancer.
+
+2. Pay Invoice: Send the payment in Bitcoin to the address on the invoice NFT (can be the freelancer or the investor if the invoice was financed).
+
+3. On-Chain Proof: The app verifies the payment was made on-chain (via BTC integration on ICP using Chain Fusion), updates the invoice status to "Paid."
+
+#### 💸 Investors
+
+1. Browse Invoices: See open, unfinanced invoices from verified freelancers/clients.
+
+2. Buy at Discount: Choose an invoice and purchase it. (We will try to implement this)
+
+3. Wait for Payment: When the client pays the full amount, the payment goes to the investor's BTC wallet — they earn a return.
+
+4. On-Chain History: Each invoice NFT tracks ownership, financing, repayment, and rating info, building investor trust scores.
 
 
-## What's covered
+
+<!-- A wallet for everybody, Post ( Job, description, payment offer, completed), anyone can pick a job, then request for payment. Anyone can post a job and approve payment. Thats 1 class, 2 structs, and a wallet connection yenye nitatoa icp ninja -->
+
+<!-- ## What's covered
 
 | Feature                       | Implemented? |
 | ----------------------------- | ------------ |
@@ -16,8 +59,7 @@ A wallet for everybody, Post ( Job, description, payment offer, completed), anyo
 | Approve payment               | ✅            |
 | View open jobs                | ✅            |
 | Track completed jobs per user | ✅            |
-
-
+ -->
 
 If you want to start working on your project right away, you might want to try the following commands:
 
