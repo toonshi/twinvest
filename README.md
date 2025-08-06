@@ -81,3 +81,191 @@ also freelancers can bid on  a project to do while investors can also invest on 
 
 also investors can see all their invested projects 
 so adjust all models accodingky andd add them related to each other
+# Twinvest
+
+## Introduction
+
+The project harnesses blockchain and DeFi to deliver a secure and transparent solution for invoice financing, empowering businesses and freelancers with improved cash flow.The invoice financing system enables Small and Medium-sized Enterprises (SMEs) to tokenize unpaid invoices as Non-Fungible Tokens (NFTs), allowing investors to purchase them for an early capital, with automated repayment via smart contracts.
+
+## Description
+
+A decentralized app that helps freelancers receive Bitcoin salaries by issuing invoice NFTs, which can optionally be financed by investors before being paid by clients. The entire process is transparent, verifiable, and runs fully on the Internet Computer (ICP).
+
+### How it works - role to role
+
+#### 👨‍💻 Freelancers
+
+Create Profile: Sign in with Internet Identity. Set up their Bitcoin address, skills, and past experience.
+
+Issue Invoice: After completing work, the freelancer creates an invoice. This invoice is minted as an NFT on ICP, containing:
+
+1. Amount due
+
+2. Due date
+
+3. Work description
+
+4. Client reference
+
+5. Get Paid in Bitcoin: If not financed, the freelancer waits for the client to pay directly to their BTC wallet when the invoice is due.
+
+#### 🧑‍💼 Clients
+
+1. Hire & Approve Work: After a job is done, they approve the invoice submitted by the freelancer.
+
+2. Pay Invoice: Send the payment in Bitcoin to the address on the invoice NFT (can be the freelancer or the investor if the invoice was financed).
+
+3. On-Chain Proof: The app verifies the payment was made on-chain (via BTC integration on ICP using Chain Fusion), updates the invoice status to "Paid."
+
+#### 💸 Investors
+
+1. Browse Invoices: See open, unfinanced invoices from verified freelancers/clients.
+
+2. Buy at Discount: Choose an invoice and purchase it. (We will try to implement this)
+
+3. Wait for Payment: When the client pays the full amount, the payment goes to the investor's BTC wallet — they earn a return.
+
+4. On-Chain History: Each invoice NFT tracks ownership, financing, repayment, and rating info, building investor trust scores.
+
+## ⚙️ Requirements
+
+- A computer with a bash terminal
+- Access to the Internet
+
+Before running this project locally, ensure you have the following installed:
+
+- [Node.js](https://nodejs.org/) (v16 or higher recommended)
+- [npm](https://www.npmjs.com/) (comes with Node.js)
+- [DFX SDK](https://internetcomputer.org/docs/current/developer-docs/setup/install/) (for Internet Computer development)
+- A supported browser (Chrome, Firefox, etc.)
+- Git
+
+You can install DFX using the following:
+
+- Run this command on terminal
+
+```bash
+ sh-ci "$(curl-fsSL https://internetcomputer.org/install.sh)"
+
+```
+
+After installation, restart your terminal and verify:
+
+```bash
+dfx --version
+
+```
+
+## Installations
+
+1. Clone the project and navigate into the directory:
+
+```bash
+https://github.com/toonshi/twinvest
+
+```
+
+2. cd twinvest
+
+```bash
+cd twinvest
+
+```
+
+3. Install front-end dependancies
+
+```bash
+npm install
+
+```
+
+4. Start the development server:
+
+```bash
+npm run dev
+
+```
+
+## 🛠️ Technologies Used
+
+React – Used for building the responsive and interactive front-end user interface.
+
+Motoko – A modern, actor-based programming language used to develop the backend canisters running on the Internet Computer (ICP).
+
+## Support and Contact Details
+
+Incase of any query, need for collaboration or issues with this code, feel free to reach me at:
+fabbydebby@gmail.com
+
+If you want to start working on your project right away, you might want to try the following commands:
+
+```bash
+cd twinvest/
+dfx help
+dfx canister --help
+```
+
+## Running the project locally
+
+If you want to test your project locally, you can use the following commands:
+
+```bash
+# Starts the replica, running in the background
+dfx start --background
+
+# Deploys your canisters to the replica and generates your candid interface
+dfx deploy
+```
+
+Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
+
+If you have made changes to your backend canister, you can generate a new candid interface with
+
+```bash
+npm run generate
+```
+
+at any time. This is recommended before starting the frontend development server, and will be run automatically any time you run `dfx deploy`.
+
+If you are making frontend changes, you can start a development server with
+
+```bash
+npm start
+```
+
+Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
+
+### Note on frontend environment variables
+
+If you are hosting frontend code somewhere without using DFX, you may need to make one of the following adjustments to ensure your project does not fetch the root key in production:
+
+- set`DFX_NETWORK` to `ic` if you are using Webpack
+- use your own preferred method to replace `process.env.DFX_NETWORK` in the autogenerated declarations
+  - Setting `canisters -> {asset_canister_id} -> declarations -> env_override to a string` in `dfx.json` will replace `process.env.DFX_NETWORK` with the string in the autogenerated declarations
+- Write your own `createActor` constructor
+
+## License
+
+MIT License
+
+Copyright (c) 2024 luvley-dee48
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+<!-- A wallet for everybody, Post ( Job, description, payment offer, completed), anyone can pick a job, then request for payment. Anyone can post a job and approve payment. Thats 1 class, 2 structs, and a wallet connection yenye nitatoa icp ninja -->
+
+<!-- ## What's covered
+
+| Feature                       | Implemented? |
+| ----------------------------- | ------------ |
+| Register user                 | ✅            |
+| Post project                  | ✅            |
+| Accept project                | ✅            |
+| Request payment               | ✅            |
+| Approve payment               | ✅            |
+| View open jobs                | ✅            |
+| Track completed jobs per user | ✅            |
