@@ -1,7 +1,7 @@
 import { html, render } from 'lit-html';
 import { twinvest_backend } from 'declarations/twinvest_backend';
 import logo from './logo2.svg';
-
+import Apps from './Apps.jsx'
 class App {
   greeting = '';
 
@@ -30,7 +30,7 @@ class App {
         <section id="greeting">${this.greeting}</section>
       </main>
     `;
-    render(body, document.getElementById('root'));
+    render(<Apps/>, document.getElementById('root'));
     document
       .querySelector('form')
       .addEventListener('submit', this.#handleSubmit);
