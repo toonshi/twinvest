@@ -1,5 +1,5 @@
 # Twinvest
-.. test by boogie 
+
 ## Introduction
 
 The project harnesses blockchain and DeFi to deliver a secure and transparent solution for invoice financing, empowering businesses and freelancers with improved cash flow.The invoice financing system enables Small and Medium-sized Enterprises (SMEs) to tokenize unpaid invoices as Non-Fungible Tokens (NFTs), allowing investors to purchase them for an early capital, with automated repayment via smart contracts.
