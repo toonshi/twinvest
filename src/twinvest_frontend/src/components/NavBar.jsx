@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Coins, Menu, X } from 'lucide-react';
@@ -41,6 +40,9 @@ const NavBar = () => {
               </Link>
               <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
                 About
+              </Link>
+              <Link to="/dashboard" className="text-muted-foreground hover:text-primary transition-colors">
+                Dashboard
               </Link>
             </div>
 
@@ -89,6 +91,9 @@ const NavBar = () => {
                 </Link>
                 <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
                   About
+                </Link>
+                <Link to="/dashboard" className="text-left text-muted-foreground hover:text-primary transition-colors">
+                  Dashboard
                 </Link>
                 <div className="flex flex-col space-y-2 pt-4">
                   <Link to="/signin">

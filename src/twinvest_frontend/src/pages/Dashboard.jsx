@@ -1,14 +1,5 @@
-// ==================== Index.jsx ====================
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-
-// Landing page sections
-import HeroSection from "@/components/HeroSection";
-import FeaturesSection from "@/components/FeaturesSection";
-import StatsSection from "@/components/StatsSection";
-import PricingSection from "@/components/PricingSection";
-import TestimonialsSection from "@/components/TestimonialsSection";
-import CTASection from "@/components/CTASection";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Dashboard components
 import { Button } from "@/components/ui/button";
@@ -24,22 +15,12 @@ import { ClientDashboard } from "@/components/ClientDashboard";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { RoleSelector } from "@/components/RoleSelector";
 
-const Index = () => {
+const Dashboard = () => {
   const [userRole, setUserRole] = useState(null);
   const [activeSection, setActiveSection] = useState("overview");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
 
-  // Check for dashboard parameter in URL
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    if (searchParams.get('dashboard') === 'true') {
-      setIsLoggedIn(true);
-    }
-  }, [location]);
-
-  console.log("Render -> isLoggedIn:", isLoggedIn, "userRole:", userRole);
+  console.log("Dashboard -> userRole:", userRole);
 
   const renderSMEContent = () => {
     switch (activeSection) {
@@ -66,53 +47,25 @@ const Index = () => {
   const handleRoleSelect = (role) => {
     console.log("Role selected:", role);
     setUserRole(role);
-    // Update URL to reflect dashboard state
-    navigate('/?dashboard=true&role=' + role, { replace: true });
   };
 
   const handleRoleChange = () => {
     setUserRole(null);
     setActiveSection("overview");
-    navigate('/?dashboard=true', { replace: true });
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setUserRole(null);
-    setActiveSection("overview");
-    navigate('/', { replace: true });
+  const handleBackToHome = () => {
+    navigate('/');
   };
-
-  const handleGoToDashboard = () => {
-    setIsLoggedIn(true);
-    navigate('/?dashboard=true', { replace: true });
-  };
-
-  // Landing page
-  if (!isLoggedIn) {
-    return (
-      <div className="min-h-screen space-y-10">
-        <HeroSection />
-        <FeaturesSection />
-        <StatsSection />
-        <PricingSection />
-        <TestimonialsSection />
-        <CTASection />
-        <div className="flex justify-center mt-8 pb-10">
-          <Button onClick={handleGoToDashboard}>Go to Dashboard</Button>
-        </div>
-      </div>
-    );
-  }
 
   // Role selection screen
-  if (isLoggedIn && !userRole) {
+  if (!userRole) {
     return (
       <div className="min-h-screen">
         <RoleSelector onRoleSelect={handleRoleSelect} />
         <div className="fixed top-4 right-4">
-          <Button variant="outline" onClick={handleLogout}>
-            Back to Landing
+          <Button variant="outline" onClick={handleBackToHome}>
+            Back to Home
           </Button>
         </div>
       </div>
@@ -158,8 +111,8 @@ const Index = () => {
           <Button variant="outline" onClick={handleRoleChange}>
             Switch Role
           </Button>
-          <Button variant="outline" onClick={handleLogout}>
-            Logout
+          <Button variant="outline" onClick={handleBackToHome}>
+            Back to Home
           </Button>
         </div>
       </div>
@@ -168,4 +121,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Dashboard;
