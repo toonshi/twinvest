@@ -1,107 +1,31 @@
 import React from 'react';
-import { Routes, Route } from "react-router-dom";
-import styles from "./style";
-import {
-  Billing,
-  Business,
-  CardDeal,
-  Clients,
-  CTA,
-  Footer,
-  Navbar,
-  Stats,
-  Testimonials,
-  Hero,
-  AuthSystem,
-  Dashboard, // Add this import
-} from "./components";
 
-const HomePage = () => (
-  <>
-    <div className={`bg-primary ${styles.flexStart}`}>
-      <div className={`${styles.boxWidth}`}>
-        <Hero />
-      </div>
-    </div>
+import { Toaster } from "./components/ui/toaster";
+import { Toaster as Sonner } from "./components/ui/sonner";
+import { TooltipProvider } from "./components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Index from "./pages/Index";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+import NotFound from "./pages/NotFound";
 
-    <div className={`bg-primary ${styles.paddingX} ${styles.flexCenter}`}>
-      <div className={`${styles.boxWidth}`}>
-        <Stats />
-        <Business />
-        <Billing />
-        <CardDeal />
-        <Testimonials />
-        <Clients />
-        <CTA />
-        <Footer />
-      </div>
-    </div>
-  </>
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          {/* Catch-all route for unmatched paths */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+    </TooltipProvider>
+  </QueryClientProvider>
 );
 
-const Apps = () => (
-  <>
-    <div className="bg-primary w-full overflow-hidden">
-      <Routes>
-        {/* Routes that need navbar */}
-        <Route
-          path="/"
-          element={
-            <>
-              <div className={`${styles.paddingX} ${styles.flexCenter}`}>
-                <div className={`${styles.boxWidth}`}>
-                  <Navbar />
-                </div>
-              </div>
-              <HomePage />
-            </>
-          }
-        />
-        <Route
-          path="/auth"
-          element={
-            <>
-              <div className={`${styles.paddingX} ${styles.flexCenter}`}>
-                <div className={`${styles.boxWidth}`}>
-                  <Navbar />
-                </div>
-              </div>
-              <AuthSystem />
-            </>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            <>
-              <div className={`${styles.paddingX} ${styles.flexCenter}`}>
-                <div className={`${styles.boxWidth}`}>
-                  <Navbar />
-                </div>
-              </div>
-              <AuthSystem />
-            </>
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            <>
-              <div className={`${styles.paddingX} ${styles.flexCenter}`}>
-                <div className={`${styles.boxWidth}`}>
-                  <Navbar />
-                </div>
-              </div>
-              <AuthSystem />
-            </>
-          }
-        />
-
-        {/* Dashboard route without navbar (has its own navigation) */}
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Routes>
-    </div>
-  </>
-);
-
-export default Apps;
+export default App;
