@@ -10,6 +10,7 @@ import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
 import FeaturesSection from "./components/FeaturesSection";
+import PricingSection from "./components/PricingSection";
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/features" element={<FeaturesSection />} />
+          <Route path="/marketplace" element={<PricingSection />} />
           {/* Catch-all route for unmatched paths */}
           <Route path="*" element={<NotFound />} />
         </Routes>
