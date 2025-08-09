@@ -9,7 +9,7 @@ import Array "mo:base/Array";
 
 actor Twinvest {
 
-  // USER TYPES
+  // USER TYPES MODEL
   public type Role = {
     #freelancer;
     #client;
