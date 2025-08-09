@@ -1,9 +1,7 @@
-import React from "react";
+// ==================== Index.jsx ====================
+import React, { useState } from "react";
 
-import { useState } from "react";
-
-// Landing page imports
-import NavBar from "@/components/NavBar";
+// Landing page sections
 import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
 import StatsSection from "@/components/StatsSection";
@@ -11,7 +9,7 @@ import PricingSection from "@/components/PricingSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import CTASection from "@/components/CTASection";
 
-// Dashboard imports
+// Dashboard components
 import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { DashboardOverview } from "@/components/DashboardOverview";
@@ -28,50 +26,52 @@ import { RoleSelector } from "@/components/RoleSelector";
 const Index = () => {
   const [userRole, setUserRole] = useState(null);
   const [activeSection, setActiveSection] = useState("overview");
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // You can replace with real auth
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // ----- SME Dashboard Renderer -----
+  console.log("Render -> isLoggedIn:", isLoggedIn, "userRole:", userRole);
+
   const renderSMEContent = () => {
     switch (activeSection) {
-      case "overview":
-        return <DashboardOverview />;
-      case "invoices":
-        return <InvoiceManagement />;
-      case "offers":
-        return <InvestorOffers />;
-      case "transactions":
-        return <TransactionHistory />;
-      case "wallet":
-        return <WalletDashboard />;
-      case "profile":
-        return <ProfileKYC />;
-      default:
-        return <DashboardOverview />;
+      case "overview": return <DashboardOverview />;
+      case "invoices": return <InvoiceManagement />;
+      case "offers": return <InvestorOffers />;
+      case "transactions": return <TransactionHistory />;
+      case "wallet": return <WalletDashboard />;
+      case "profile": return <ProfileKYC />;
+      default: return <DashboardOverview />;
     }
   };
 
-  // ----- Role-Based Dashboard Renderer -----
   const renderRoleBasedDashboard = () => {
     switch (userRole) {
-      case "sme":
-        return renderSMEContent();
-      case "investor":
-        return <InvestorDashboard />;
-      case "client":
-        return <ClientDashboard />;
-      case "admin":
-        return <AdminDashboard />;
-      default:
-        return <DashboardOverview />;
+      case "sme": return renderSMEContent();
+      case "investor": return <InvestorDashboard />;
+      case "client": return <ClientDashboard />;
+      case "admin": return <AdminDashboard />;
+      default: return <DashboardOverview />;
     }
   };
 
-  // ----- Decide Landing vs Dashboard -----
+  const handleRoleSelect = (role) => {
+    console.log("Role selected:", role);
+    setUserRole(role);
+  };
+
+  const handleRoleChange = () => {
+    setUserRole(null);
+    setActiveSection("overview"); // Reset to overview when switching roles
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserRole(null);
+    setActiveSection("overview");
+  };
+
+  // Landing page
   if (!isLoggedIn) {
-    // Landing Page
     return (
       <div className="min-h-screen space-y-10">
-        <NavBar />
         <HeroSection />
         <FeaturesSection />
         <StatsSection />
@@ -85,12 +85,21 @@ const Index = () => {
     );
   }
 
-  // ----- Role Selection -----
-  if (!userRole) {
-    return <RoleSelector onRoleSelect={setUserRole} />;
+  // Role selection screen
+  if (isLoggedIn && !userRole) {
+    return (
+      <div>
+        <RoleSelector onRoleSelect={handleRoleSelect} />
+        <div className="fixed top-4 right-4">
+          <Button variant="outline" onClick={handleLogout}>
+            Back to Landing
+          </Button>
+        </div>
+      </div>
+    );
   }
 
-  // ----- SME Layout -----
+  // SME Dashboard with sidebar
   if (userRole === "sme") {
     return (
       <div className="min-h-screen bg-background flex">
@@ -98,14 +107,16 @@ const Index = () => {
           activeSection={activeSection}
           onSectionChange={setActiveSection}
           userRole={userRole}
-          onRoleChange={() => setUserRole(null)}
+          onRoleChange={handleRoleChange}
         />
-        <main className="flex-1 p-6 overflow-auto">{renderSMEContent()}</main>
+        <main className="flex-1 p-6 overflow-auto">
+          {renderSMEContent()}
+        </main>
       </div>
     );
   }
 
-  // ----- Other Roles -----
+  // Other role dashboards
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="flex items-center justify-between mb-6">
@@ -123,9 +134,14 @@ const Index = () => {
               : ""}
           </span>
         </div>
-        <Button variant="outline" onClick={() => setUserRole(null)}>
-          Switch Role
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleRoleChange}>
+            Switch Role
+          </Button>
+          <Button variant="outline" onClick={handleLogout}>
+            Logout
+          </Button>
+        </div>
       </div>
       {renderRoleBasedDashboard()}
     </div>
