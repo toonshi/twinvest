@@ -1,140 +1,114 @@
 import React from 'react';
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { close, logo, menu } from "../assets";
-import { navLinks } from "../constants";
-import { SlideUpVariants, ZoomInVariants } from "./animation.js";
 
-const Navbar = () => {
-  const [active, setActive] = useState("Home");
-  const [toggle, setToggle] = useState(false);
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Coins, Menu, X } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+
+const NavBar = () => {
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <motion.nav
-      className="w-full flex py-6 justify-between items-center navbar"
-      variants={SlideUpVariants}
-      initial="hidden"
-      animate="visible"
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6 }}
+      className="fixed top-0 left-0 right-0 z-50 px-6 py-4"
     >
-      <motion.img
-        src={logo}
-        alt="twinvest"
-        className="w-[204px] h-[45px] cursor-pointer"
-        variants={ZoomInVariants}
-        whileHover={{
-          scale: 1.1,
-          filter: "brightness(1.2)",
-          transition: { duration: 0.3 },
-        }}
-        whileTap={{ scale: 0.95 }}
-      />
+      <div className="mx-auto max-w-7xl">
+        <div className="feature-card backdrop-blur-xl bg-card/80">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <Link to="/" className="flex items-center space-x-2 hover-ball p-2 rounded-lg">
+              <div className="relative">
+                <Coins className="h-8 w-8 text-primary glow-effect" />
+                <div className="pulse-ring w-8 h-8 top-0 left-0"></div>
+              </div>
+              <span className="text-xl font-bold gradient-text">Twinvest</span>
+            </Link>
 
-      {/* Desktop Navigation */}
-      <motion.ul
-        className="list-none sm:flex hidden justify-end items-center flex-1"
-        variants={SlideUpVariants}
-      >
-        {navLinks.map((nav, index) => (
-          <motion.li
-            key={nav.id}
-            className={`font-poppins font-normal cursor-pointer text-[16px] ${
-              active === nav.title ? "text-white" : "text-dimWhite"
-            } ${index === navLinks.length - 1 ? "mr-0" : "mr-10"}`}
-            onClick={() => setActive(nav.title)}
-            variants={SlideUpVariants}
-            whileHover={{
-              scale: 1.1,
-              color: "#ffffff",
-              textShadow: "0 0 10px rgba(255, 255, 255, 0.6)",
-              transition: { duration: 0.3 },
-            }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Link to={nav.path || `#${nav.id}`}>{nav.title}</Link>
-          </motion.li>
-        ))}
-      </motion.ul>
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-8">
+              <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
+                Home
+              </Link>
+              <Link to="/features" className="text-muted-foreground hover:text-primary transition-colors">
+                Features
+              </Link>
+              <Link to="/marketplace" className="text-muted-foreground hover:text-primary transition-colors">
+                Marketplace
+              </Link>
+              <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
+                About
+              </Link>
+            </div>
 
-      {/* Mobile Menu Button */}
-      <div className="sm:hidden flex flex-1 justify-end items-center">
-        <motion.img
-          src={toggle ? close : menu}
-          alt="menu"
-          className="w-[28px] h-[28px] object-contain cursor-pointer"
-          onClick={() => setToggle(!toggle)}
-          variants={ZoomInVariants}
-          whileHover={{
-            scale: 1.2,
-            rotate: 180,
-            filter: "brightness(1.3)",
-            transition: { duration: 0.4 },
-          }}
-          whileTap={{ scale: 0.9 }}
-        />
+            {/* Auth Buttons */}
+            <div className="hidden md:flex items-center space-x-4">
+              <Link to="/signin">
+                <Button variant="ghost" className="hover-ball">
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/signup">
+                <Button className="hero-button">
+                  Sign Up
+                </Button>
+              </Link>
+            </div>
 
-        {/* Mobile Sidebar */}
-        <motion.div
-          className={`${
-            !toggle ? "hidden" : "flex"
-          } p-6 bg-black-gradient absolute top-20 right-0 mx-4 my-2 min-w-[140px] rounded-xl sidebar`}
-          initial={{ opacity: 0, scale: 0.8, y: -20 }}
-          animate={
-            toggle
-              ? {
-                  opacity: 1,
-                  scale: 1,
-                  y: 0,
-                  transition: { duration: 0.3, ease: "easeOut" },
-                }
-              : {
-                  opacity: 0,
-                  scale: 0.8,
-                  y: -20,
-                  transition: { duration: 0.2 },
-                }
-          }
-        >
-          <ul className="list-none flex justify-end items-start flex-1 flex-col">
-            {navLinks.map((nav, index) => (
-              <motion.li
-                key={nav.id}
-                className={`font-poppins font-medium cursor-pointer text-[16px] ${
-                  active === nav.title ? "text-white" : "text-dimWhite"
-                } ${index === navLinks.length - 1 ? "mb-0" : "mb-4"}`}
-                onClick={() => {
-                  setActive(nav.title);
-                  setToggle(false); // Close menu on selection
-                }}
-                initial={{ opacity: 0, x: 20 }}
-                animate={
-                  toggle
-                    ? {
-                        opacity: 1,
-                        x: 0,
-                        transition: {
-                          delay: index * 0.1,
-                          duration: 0.3,
-                        },
-                      }
-                    : { opacity: 0, x: 20 }
-                }
-                whileHover={{
-                  scale: 1.1,
-                  color: "#ffffff",
-                  x: -5,
-                  transition: { duration: 0.2 },
-                }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link to={nav.path || `#${nav.id}`}>{nav.title}</Link>
-              </motion.li>
-            ))}
-          </ul>
-        </motion.div>
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden hover-ball"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
+
+          {/* Mobile Menu */}
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden mt-4 pt-4 border-t border-border"
+            >
+              <div className="flex flex-col space-y-4">
+                <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
+                  Home
+                </Link>
+                <Link to="/features" className="text-muted-foreground hover:text-primary transition-colors">
+                  Features
+                </Link>
+                <Link to="/marketplace" className="text-muted-foreground hover:text-primary transition-colors">
+                  Marketplace
+                </Link>
+                <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
+                  About
+                </Link>
+                <div className="flex flex-col space-y-2 pt-4">
+                  <Link to="/signin">
+                    <Button variant="ghost" className="w-full hover-ball">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link to="/signup">
+                    <Button className="w-full hero-button">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
       </div>
     </motion.nav>
   );
 };
 
-export default Navbar;
+export default NavBar;

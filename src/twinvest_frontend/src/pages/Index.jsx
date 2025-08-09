@@ -1,15 +1,15 @@
-import React from 'react';
+import React from "react";
 
 import { useState } from "react";
 
 // Landing page imports
-import NavBar from '@/components/NavBar';
-import HeroSection from '@/components/HeroSection';
-import FeaturesSection from '@/components/FeaturesSection';
-import StatsSection from '@/components/StatsSection';
-import PricingSection from '@/components/PricingSection';
-import TestimonialsSection from '@/components/TestimonialsSection';
-import CTASection from '@/components/CTASection';
+import NavBar from "@/components/NavBar";
+import HeroSection from "@/components/HeroSection";
+import FeaturesSection from "@/components/FeaturesSection";
+import StatsSection from "@/components/StatsSection";
+import PricingSection from "@/components/PricingSection";
+import TestimonialsSection from "@/components/TestimonialsSection";
+import CTASection from "@/components/CTASection";
 
 // Dashboard imports
 import { Button } from "@/components/ui/button";
@@ -33,24 +33,36 @@ const Index = () => {
   // ----- SME Dashboard Renderer -----
   const renderSMEContent = () => {
     switch (activeSection) {
-      case "overview": return <DashboardOverview />;
-      case "invoices": return <InvoiceManagement />;
-      case "offers": return <InvestorOffers />;
-      case "transactions": return <TransactionHistory />;
-      case "wallet": return <WalletDashboard />;
-      case "profile": return <ProfileKYC />;
-      default: return <DashboardOverview />;
+      case "overview":
+        return <DashboardOverview />;
+      case "invoices":
+        return <InvoiceManagement />;
+      case "offers":
+        return <InvestorOffers />;
+      case "transactions":
+        return <TransactionHistory />;
+      case "wallet":
+        return <WalletDashboard />;
+      case "profile":
+        return <ProfileKYC />;
+      default:
+        return <DashboardOverview />;
     }
   };
 
   // ----- Role-Based Dashboard Renderer -----
   const renderRoleBasedDashboard = () => {
     switch (userRole) {
-      case "sme": return renderSMEContent();
-      case "investor": return <InvestorDashboard />;
-      case "client": return <ClientDashboard />;
-      case "admin": return <AdminDashboard />;
-      default: return <DashboardOverview />;
+      case "sme":
+        return renderSMEContent();
+      case "investor":
+        return <InvestorDashboard />;
+      case "client":
+        return <ClientDashboard />;
+      case "admin":
+        return <AdminDashboard />;
+      default:
+        return <DashboardOverview />;
     }
   };
 
@@ -88,9 +100,7 @@ const Index = () => {
           userRole={userRole}
           onRoleChange={() => setUserRole(null)}
         />
-        <main className="flex-1 p-6 overflow-auto">
-          {renderSMEContent()}
-        </main>
+        <main className="flex-1 p-6 overflow-auto">{renderSMEContent()}</main>
       </div>
     );
   }
