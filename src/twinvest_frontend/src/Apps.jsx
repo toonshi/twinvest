@@ -6,8 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, useLocation } from "react-router-dom";
 
 import NavBar from "./components/NavBar";
-import LandingPage from "./pages/LandingPage"; // Renamed for clarity
-import Dashboard from "./pages/Dashboard"; // New dashboard page
+import LandingPage from "./pages/LandingPage";
+import Dashboard from "./pages/Dashboard";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
@@ -20,8 +20,8 @@ const queryClient = new QueryClient();
 const AppContent = () => {
   const location = useLocation();
   
-  // Hide navbar on sign-in and sign-up pages
-  const hideNavbar = ['/signin', '/signup'].includes(location.pathname);
+  // Hide navbar on sign-in, sign-up, and dashboard pages
+  const hideNavbar = ['/signin', '/signup', '/dashboard'].includes(location.pathname);
 
   return (
     <>

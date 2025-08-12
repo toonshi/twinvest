@@ -1,11 +1,12 @@
+import React from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { 
-  LayoutDashboard, 
-  FileText, 
-  TrendingUp, 
-  History, 
-  User, 
+import {
+  LayoutDashboard,
+  FileText,
+  TrendingUp,
+  History,
+  User,
   Settings,
   Wallet,
   PlusCircle
@@ -26,14 +27,14 @@ export const DashboardSidebar = ({ activeSection, onSectionChange, userRole, onR
     <div className="w-64 bg-card border-r border-border h-screen flex flex-col">
       <div className="p-6 border-b border-border">
         <h1 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-          InvoiceFlow
+          Twinvest
         </h1>
         <p className="text-sm text-muted-foreground mt-1">SME Dashboard</p>
       </div>
       
       <div className="p-4">
         <Button 
-          variant="gradient" 
+          variant="gradient"
           className="w-full justify-start gap-2 mb-6"
           onClick={() => onSectionChange('upload')}
         >
@@ -65,7 +66,7 @@ export const DashboardSidebar = ({ activeSection, onSectionChange, userRole, onR
       {onRoleChange && (
         <div className="p-4 mt-auto border-t border-border">
           <Button 
-            variant="outline" 
+            variant="outline"
             className="w-full justify-start gap-2"
             onClick={onRoleChange}
           >

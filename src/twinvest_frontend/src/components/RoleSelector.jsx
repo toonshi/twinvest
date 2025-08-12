@@ -1,11 +1,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Users, TrendingUp, DollarSign, Shield } from "lucide-react";
 
-
-
 export const RoleSelector = ({ onRoleSelect }) => {
+  const navigate = useNavigate();
+  
   const roles = [
     {
       id: "sme",
@@ -65,6 +66,16 @@ export const RoleSelector = ({ onRoleSelect }) => {
     }
   ];
 
+  const handleRoleSelection = (roleId) => {
+    if (onRoleSelect) {
+      // If using the component with onRoleSelect prop (for internal state management)
+      onRoleSelect(roleId);
+    } else {
+      // If using standalone, navigate to dashboard with role parameter
+      navigate(`/dashboard?role=${roleId}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-6xl space-y-8">
@@ -87,7 +98,7 @@ export const RoleSelector = ({ onRoleSelect }) => {
               <Card 
                 key={role.id} 
                 className={`cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-105 bg-gradient-to-br ${role.color}`}
-                onClick={() => onRoleSelect(role.id)}
+                onClick={() => handleRoleSelection(role.id)}
               >
                 <CardHeader className="text-center">
                   <div className="mx-auto w-12 h-12 rounded-full bg-background/80 flex items-center justify-center mb-4">
@@ -112,7 +123,7 @@ export const RoleSelector = ({ onRoleSelect }) => {
                     className="w-full"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onRoleSelect(role.id);
+                      handleRoleSelection(role.id);
                     }}
                   >
                     Enter Dashboard

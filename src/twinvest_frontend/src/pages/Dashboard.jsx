@@ -1,7 +1,6 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-// Dashboard components
 import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { DashboardOverview } from "@/components/DashboardOverview";
@@ -19,46 +18,67 @@ const Dashboard = () => {
   const [userRole, setUserRole] = useState(null);
   const [activeSection, setActiveSection] = useState("overview");
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  console.log("Dashboard -> userRole:", userRole);
+  useEffect(() => {
+    const roleFromUrl = searchParams.get("role");
+    if (roleFromUrl) {
+      setUserRole(roleFromUrl);
+    }
+  }, [searchParams]);
 
   const renderSMEContent = () => {
     switch (activeSection) {
-      case "overview": return <DashboardOverview />;
-      case "invoices": return <InvoiceManagement />;
-      case "offers": return <InvestorOffers />;
-      case "transactions": return <TransactionHistory />;
-      case "wallet": return <WalletDashboard />;
-      case "profile": return <ProfileKYC />;
-      default: return <DashboardOverview />;
+      case "overview":
+        return <DashboardOverview />;
+      case "invoices":
+        return <InvoiceManagement />;
+      case "upload":
+        return <InvoiceManagement />;
+      case "offers":
+        return <InvestorOffers />;
+      case "transactions":
+        return <TransactionHistory />;
+      case "wallet":
+        return <WalletDashboard />;
+      case "profile":
+        return <ProfileKYC />;
+      default:
+        return <DashboardOverview />;
     }
   };
 
   const renderRoleBasedDashboard = () => {
     switch (userRole) {
-      case "sme": return renderSMEContent();
-      case "investor": return <InvestorDashboard />;
-      case "client": return <ClientDashboard />;
-      case "admin": return <AdminDashboard />;
-      default: return <DashboardOverview />;
+      case "sme":
+        return renderSMEContent();
+      case "investor":
+        return <InvestorDashboard />;
+      case "client":
+        return <ClientDashboard />;
+      case "admin":
+        return <AdminDashboard />;
+      default:
+        return <DashboardOverview />;
     }
   };
 
   const handleRoleSelect = (role) => {
-    console.log("Role selected:", role);
     setUserRole(role);
+    setActiveSection("overview");
+    setSearchParams({ role });
   };
 
   const handleRoleChange = () => {
     setUserRole(null);
     setActiveSection("overview");
+    setSearchParams({});
   };
 
   const handleBackToHome = () => {
-    navigate('/');
+    navigate("/");
   };
 
-  // Role selection screen
   if (!userRole) {
     return (
       <div className="min-h-screen">
@@ -72,7 +92,6 @@ const Dashboard = () => {
     );
   }
 
-  // SME Dashboard with sidebar
   if (userRole === "sme") {
     return (
       <div className="min-h-screen bg-background flex">
@@ -82,14 +101,11 @@ const Dashboard = () => {
           userRole={userRole}
           onRoleChange={handleRoleChange}
         />
-        <main className="flex-1 p-6 overflow-auto">
-          {renderSMEContent()}
-        </main>
+        <main className="flex-1 p-6 overflow-auto">{renderSMEContent()}</main>
       </div>
     );
   }
 
-  // Other role dashboards
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="flex items-center justify-between mb-6">
