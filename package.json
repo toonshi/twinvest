@@ -16,6 +16,7 @@
     "src/twinvest_frontend"
   ],
   "dependencies": {
+    "@dfinity/auth-client": "^3.2.0",
     "clsx": "^2.1.1",
     "tailwind-merge": "^3.3.1"
   }

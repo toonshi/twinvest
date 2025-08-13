@@ -4,6 +4,10 @@
       "main": "src/twinvest_backend/main.mo",
       "type": "motoko"
     },
+    "role_registry": {
+      "type": "motoko",
+      "main": "src/role_registry/main.mo"
+    },
     "twinvest_frontend": {
       "dependencies": [
         "twinvest_backend"
