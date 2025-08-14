@@ -1,12 +1,46 @@
-import React from 'react';
+// src/components/NavBar.jsx
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Coins, Menu, X } from 'lucide-react';
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Coins, Menu, X, LogIn, UserPlus } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useUserRole } from '@/hooks/useUserRole';
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { userRole, hasStoredRole, getUserRoleConfig } = useUserRole();
+  const navigate = useNavigate();
+
+  // Role-aware navigation handlers
+  const handleSignIn = () => {
+    if (hasStoredRole && userRole) {
+      const config = getUserRoleConfig(userRole);
+      navigate(config.loginPath);
+    } else {
+      navigate('/signin');
+    }
+  };
+
+  const handleSignUp = () => {
+    navigate('/signup');
+  };
+
+  const handleGetStarted = () => {
+    if (hasStoredRole && userRole) {
+      const config = getUserRoleConfig(userRole);
+      navigate(config.dashboardPath);
+    } else {
+      navigate('/role-selector');
+    }
+  };
+
+  const navLinks = [
+    { href: '/', label: 'Home' },
+    { href: '/features', label: 'Features' },
+    { href: '/marketplace', label: 'Marketplace' },
+    { href: '/about', label: 'About' },
+    { href: '/dashboard', label: 'Dashboard' },
+  ];
 
   return (
     <motion.nav
@@ -29,35 +63,27 @@ const NavBar = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
-                Home
-              </Link>
-              <Link to="/features" className="text-muted-foreground hover:text-primary transition-colors">
-                Features
-              </Link>
-              <Link to="/marketplace" className="text-muted-foreground hover:text-primary transition-colors">
-                Marketplace
-              </Link>
-              <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                About
-              </Link>
-              <Link to="/dashboard" className="text-muted-foreground hover:text-primary transition-colors">
-                Dashboard
-              </Link>
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
 
-            {/* Auth Buttons */}
+            {/* Desktop Auth Buttons */}
             <div className="hidden md:flex items-center space-x-4">
-              <Link to="/signin">
-                <Button variant="ghost" className="hover-ball">
-                  Sign In
-                </Button>
-              </Link>
-              <Link to="/signup">
-                <Button className="hero-button">
-                  Sign Up
-                </Button>
-              </Link>
+              <Button variant="ghost" className="hover-ball" onClick={handleSignIn}>
+                <LogIn className="h-4 w-4 mr-2" />
+                Sign In
+              </Button>
+              <Button className="hero-button" onClick={handleSignUp}>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Get Started
+              </Button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -80,32 +106,38 @@ const NavBar = () => {
               className="md:hidden mt-4 pt-4 border-t border-border"
             >
               <div className="flex flex-col space-y-4">
-                <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
-                  Home
-                </Link>
-                <Link to="/features" className="text-muted-foreground hover:text-primary transition-colors">
-                  Features
-                </Link>
-                <Link to="/marketplace" className="text-muted-foreground hover:text-primary transition-colors">
-                  Marketplace
-                </Link>
-                <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                  About
-                </Link>
-                <Link to="/dashboard" className="text-left text-muted-foreground hover:text-primary transition-colors">
-                  Dashboard
-                </Link>
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
                 <div className="flex flex-col space-y-2 pt-4">
-                  <Link to="/signin">
-                    <Button variant="ghost" className="w-full hover-ball">
-                      Sign In
-                    </Button>
-                  </Link>
-                  <Link to="/signup">
-                    <Button className="w-full hero-button">
-                      Sign Up
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="ghost"
+                    className="w-full hover-ball"
+                    onClick={() => {
+                      handleSignIn();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Button>
+                  <Button
+                    className="w-full hero-button"
+                    onClick={() => {
+                      handleSignUp();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Get Started
+                  </Button>
                 </div>
               </div>
             </motion.div>

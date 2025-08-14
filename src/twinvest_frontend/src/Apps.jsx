@@ -15,8 +15,9 @@ import FeaturesSection from "./components/FeaturesSection";
 import PricingSection from "./components/PricingSection";
 import TestimonialsSection from "./components/TestimonialsSection";
 import RoleSelector from "./components/RoleSelector";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-// Role-based dashboard components
+// Dashboard components
 import { DashboardOverview } from "./components/DashboardOverview";
 import { InvoiceManagement } from "./components/InvoiceManagement";
 import { InvestorOffers } from "./components/InvestorOffers";
@@ -30,7 +31,6 @@ import { DashboardSidebar } from "./components/DashboardSidebar";
 
 const queryClient = new QueryClient();
 
-// SME Dashboard Layout
 const SMEDashboard = () => {
   const [activeSection, setActiveSection] = React.useState("overview");
 
@@ -53,24 +53,22 @@ const SMEDashboard = () => {
         onSectionChange={setActiveSection}
         userRole="sme"
       />
-      <main className="flex-1 p-6 overflow-auto">
-        {renderSMEContent()}
-      </main>
+      <main className="flex-1 p-6 overflow-auto">{renderSMEContent()}</main>
     </div>
   );
 };
 
 const AppContent = () => {
   const location = useLocation();
-  
-  // Hide navbar on sign-in, sign-up, dashboard, and role selector pages
-  const hideNavbar = ['/signin', '/signup', '/dashboard', '/role-selector'].includes(location.pathname) || 
-                     location.pathname.startsWith('/dashboard/');
+
+  const hideNavbar =
+    ["/signin", "/signup", "/dashboard", "/role-selector"].includes(location.pathname) ||
+    location.pathname.startsWith("/dashboard/");
 
   return (
     <>
       {!hideNavbar && <NavBar />}
-      <div className={hideNavbar ? '' : 'pt-20'}>
+      <div className={hideNavbar ? "" : "pt-20"}>
         <Toaster />
         <Sonner />
         <Routes>
@@ -80,17 +78,50 @@ const AppContent = () => {
           <Route path="/features" element={<FeaturesSection />} />
           <Route path="/marketplace" element={<PricingSection />} />
           <Route path="/about" element={<TestimonialsSection />} />
-          
-          {/* Role selector route */}
+
           <Route path="/role-selector" element={<RoleSelector />} />
-          
-          {/* Dashboard routes */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/sme" element={<SMEDashboard />} />
-          <Route path="/dashboard/investor" element={<InvestorDashboard />} />
-          <Route path="/dashboard/client" element={<ClientDashboard />} />
-          <Route path="/dashboard/admin" element={<AdminDashboard />} />
-          
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/sme"
+            element={
+              <ProtectedRoute requiredRole="sme">
+                <SMEDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/investor"
+            element={
+              <ProtectedRoute requiredRole="investor">
+                <InvestorDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/client"
+            element={
+              <ProtectedRoute requiredRole="client">
+                <ClientDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard/admin"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

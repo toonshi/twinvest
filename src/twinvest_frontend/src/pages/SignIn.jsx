@@ -1,47 +1,64 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Coins, Eye, EyeOff, ArrowLeft, Loader2 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { loginWithII, routeByRole, authenticateTraditional } from '../lib/icp';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { Coins, ArrowLeft, Users, TrendingUp, DollarSign, Shield } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { loginWithII, routeByRole } from '../lib/icp';
 import { toast } from '@/components/ui/use-toast';
 
+// Import your role-based login components
+import FreelancerLogin from '@/components/login/FreelancerLogin';
+import InvestorLogin from '@/components/login/InvestorLogin';
+import ClientLogin from '@/components/login/ClientLogin';
+import AdminLogin from '@/components/login/AdminLogin';
+
 const SignIn = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
   const [isICPLoading, setIsICPLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      await authenticateTraditional({ email, password });
-      
-      toast({
-        title: "Success",
-        description: "Signed in successfully!",
-      });
-      
-      // For traditional auth, redirect to role selector
-      navigate('/role-selector');
-      
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to sign in. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+  // Check if role is specified in URL
+  React.useEffect(() => {
+    const roleFromUrl = searchParams.get('role');
+    if (roleFromUrl && ['sme', 'investor', 'client', 'admin'].includes(roleFromUrl)) {
+      setSelectedRole(roleFromUrl);
     }
-  };
+  }, [searchParams]);
+
+  const roles = [
+    { 
+      id: 'sme', 
+      title: 'SME / Freelancer', 
+      description: 'Upload invoices and get funded', 
+      icon: Users, 
+      color: 'from-primary/20 to-accent/20 border-primary/30' 
+    },
+    { 
+      id: 'investor', 
+      title: 'Investor', 
+      description: 'Browse and invest in invoice NFTs', 
+      icon: TrendingUp, 
+      color: 'from-success/20 to-primary/20 border-success/30' 
+    },
+    { 
+      id: 'client', 
+      title: 'Client / Payer', 
+      description: 'Manage and pay invoices', 
+      icon: DollarSign, 
+      color: 'from-accent/20 to-secondary/20 border-accent/30' 
+    },
+    { 
+      id: 'admin', 
+      title: 'Platform Admin', 
+      description: 'Platform operations management', 
+      icon: Shield, 
+      color: 'from-warning/20 to-destructive/20 border-warning/30' 
+    }
+  ];
 
   const handleICPLogin = async () => {
     setIsICPLoading(true);
@@ -75,6 +92,48 @@ const SignIn = () => {
     }
   };
 
+  const handleRoleSelect = (roleId) => {
+    setSelectedRole(roleId);
+    // Update URL to reflect selected role
+    navigate(`/signin?role=${roleId}`, { replace: true });
+  };
+
+  const handleBackToRoles = () => {
+    setSelectedRole(null);
+    navigate('/signin', { replace: true });
+  };
+
+  const renderRoleLogin = () => {
+    switch (selectedRole) {
+      case 'sme':
+        return <FreelancerLogin />;
+      case 'investor':
+        return <InvestorLogin />;
+      case 'client':
+        return <ClientLogin />;
+      case 'admin':
+        return <AdminLogin />;
+      default:
+        return null;
+    }
+  };
+
+  // If a role is selected, show the specific login component
+  if (selectedRole) {
+    return (
+      <div className="min-h-screen">
+        {renderRoleLogin()}
+        <div className="fixed top-4 left-4">
+          <Button variant="ghost" onClick={handleBackToRoles} className="hover-ball">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Role Selection
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Role selection interface
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="absolute inset-0 overflow-hidden">
@@ -96,112 +155,90 @@ const SignIn = () => {
         initial={{ opacity: 0, y: 20, scale: 0.95 }} 
         animate={{ opacity: 1, y: 0, scale: 1 }} 
         transition={{ duration: 0.5 }} 
-        className="relative z-10 w-full max-w-md"
+        className="relative z-10 w-full max-w-5xl"
       >
-        <div className="feature-card p-8 backdrop-blur-xl bg-card/80">
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center space-x-2 mb-6 hover-ball p-2 rounded-lg">
+            <Coins className="h-8 w-8 text-primary glow-effect" />
+            <span className="text-2xl font-bold gradient-text">Twinvest</span>
+          </Link>
+          <h1 className="text-4xl font-bold mb-4">Welcome Back</h1>
+          <p className="text-muted-foreground text-lg">Select your role to access your dashboard</p>
+        </div>
+
+        <div className="feature-card p-8 backdrop-blur-xl bg-card/80 mb-6">
+          {/* ICP Quick Login */}
           <div className="text-center mb-8">
-            <Link to="/" className="inline-flex items-center space-x-2 mb-6 hover-ball p-2 rounded-lg">
-              <Coins className="h-8 w-8 text-primary glow-effect" />
-              <span className="text-2xl font-bold gradient-text">Twinvest</span>
-            </Link>
-            <h1 className="text-3xl font-bold mb-2">Welcome Back</h1>
-            <p className="text-muted-foreground">Sign in to your account to continue</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="Enter your email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                className="hover-ball" 
-                required 
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input 
-                  id="password" 
-                  type={showPassword ? 'text' : 'password'} 
-                  placeholder="Enter your password" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  className="hover-ball pr-10" 
-                  required 
-                  disabled={isLoading}
-                />
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="icon" 
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent" 
-                  onClick={() => setShowPassword(!showPassword)}
-                  disabled={isLoading}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                </Button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                Forgot password?
-              </Link>
-            </div>
-
-            <Button type="submit" className="w-full hero-button" disabled={isLoading}>
-              {isLoading ? (
+            <Button 
+              onClick={handleICPLogin}
+              className="w-full max-w-md mx-auto h-12 bg-gradient-brand hover:opacity-90 text-primary-foreground font-medium"
+              disabled={isICPLoading}
+            >
+              {isICPLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing In...
+                  <div className="mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Connecting with ICP...
                 </>
               ) : (
-                'Sign In'
+                <>
+                  <Shield className="h-5 w-5 mr-2" />
+                  Continue with ICP Identity
+                </>
               )}
             </Button>
-          </form>
+          </div>
 
-          <div className="mt-6">
-            <Separator className="my-6" />
-            <div className="space-y-4">
-              <Button 
-                variant="outline" 
-                className="w-full hover-ball border-border/50 backdrop-blur-sm" 
-                onClick={handleICPLogin}
-                disabled={isICPLoading || isLoading}
-              >
-                {isICPLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Connecting...
-                  </>
-                ) : (
-                  'Continue with ICP Identity'
-                )}
-              </Button>
+          <div className="relative mb-8">
+            <Separator />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="bg-card px-4 text-sm text-muted-foreground">
+                Or sign in with your role
+              </span>
             </div>
           </div>
 
-          <div className="mt-6 text-center">
-            <span className="text-muted-foreground">Don't have an account? </span>
-            <Link to="/signup" className="text-primary hover:underline font-medium">
-              Sign up
-            </Link>
+          {/* Role Selection Grid */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {roles.map((role) => {
+              const Icon = role.icon;
+              
+              return (
+                <Card
+                  key={role.id}
+                  className={`cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 bg-gradient-to-br ${role.color}`}
+                  onClick={() => handleRoleSelect(role.id)}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className="mx-auto w-12 h-12 rounded-full bg-background/80 flex items-center justify-center mb-4">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <h3 className="font-semibold mb-2">{role.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-4">{role.description}</p>
+                    <Button variant="outline" size="sm" className="w-full">
+                      Sign In
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
 
-        <Link to="/">
-          <Button variant="ghost" className="mt-4 hover-ball">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Home
-          </Button>
-        </Link>
+        <div className="text-center space-y-4">
+          <div className="text-muted-foreground">
+            Don't have an account?{' '}
+            <Link to="/signup" className="text-primary hover:underline font-medium">
+              Sign up here
+            </Link>
+          </div>
+          
+          <Link to="/">
+            <Button variant="ghost" className="hover-ball">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Home
+            </Button>
+          </Link>
+        </div>
       </motion.div>
     </div>
   );
