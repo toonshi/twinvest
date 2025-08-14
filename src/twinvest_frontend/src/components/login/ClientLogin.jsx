@@ -5,8 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { Building2, Mail, Lock, Key, Shield, CreditCard, FileText, Users } from "lucide-react";
-import LoginLayout from "./LoginLayout";
+import {
+  Building2,
+  Mail,
+  Lock,
+  Key,
+  Shield,
+  CreditCard,
+  FileText,
+  Users,
+} from "lucide-react";
+import LoginLayout from "../LoginLayout";
 
 export default function ClientLogin() {
   const [email, setEmail] = useState("");
@@ -20,7 +29,12 @@ export default function ClientLogin() {
   };
 
   const handleEmailLogin = () => {
-    console.log("Company email login:", { email, password, companyId, accessCode });
+    console.log("Company email login:", {
+      email,
+      password,
+      companyId,
+      accessCode,
+    });
   };
 
   return (
@@ -169,11 +183,17 @@ export default function ClientLogin() {
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(checked)}
                 />
-                <Label htmlFor="remember" className="text-sm text-muted-foreground">
+                <Label
+                  htmlFor="remember"
+                  className="text-sm text-muted-foreground"
+                >
                   Remember me
                 </Label>
               </div>
-              <Button variant="link" className="text-sm text-primary p-0 h-auto">
+              <Button
+                variant="link"
+                className="text-sm text-primary p-0 h-auto"
+              >
                 Forgot password?
               </Button>
             </div>
@@ -192,10 +212,12 @@ export default function ClientLogin() {
             <div className="flex items-start space-x-3">
               <Shield className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
               <div className="space-y-1">
-                <h4 className="text-sm font-medium text-foreground">Enterprise Security</h4>
+                <h4 className="text-sm font-medium text-foreground">
+                  Enterprise Security
+                </h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Your session is protected by enterprise-grade security.
-                  All activities are monitored and logged for compliance.
+                  Your session is protected by enterprise-grade security. All
+                  activities are monitored and logged for compliance.
                 </p>
               </div>
             </div>
@@ -205,7 +227,10 @@ export default function ClientLogin() {
           <div className="text-center pt-4 border-t border-border">
             <p className="text-sm text-muted-foreground">
               Need enterprise access?{" "}
-              <Button variant="link" className="text-primary p-0 h-auto font-medium">
+              <Button
+                variant="link"
+                className="text-primary p-0 h-auto font-medium"
+              >
                 Contact your administrator
               </Button>
             </p>

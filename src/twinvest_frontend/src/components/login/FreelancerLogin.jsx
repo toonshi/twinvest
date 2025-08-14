@@ -6,11 +6,26 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Wallet, Mail, Lock, Smartphone, FileText, DollarSign, Zap, Loader2 } from "lucide-react";
+import {
+  Users,
+  Wallet,
+  Mail,
+  Lock,
+  Smartphone,
+  FileText,
+  DollarSign,
+  Zap,
+  Loader2,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
-import LoginLayout from "./LoginLayout";
-import { authenticateEmail, authenticatePhone, authenticateWallet, sendOTP } from "../../lib/auth";
+import LoginLayout from "../LoginLayout";
+import {
+  authenticateEmail,
+  authenticatePhone,
+  authenticateWallet,
+  sendOTP,
+} from "../../lib/auth";
 
 export default function FreelancerLogin() {
   const [email, setEmail] = useState("");
@@ -35,15 +50,15 @@ export default function FreelancerLogin() {
 
     setIsLoading(true);
     try {
-      await authenticateEmail({ email, password, role: 'sme' });
+      await authenticateEmail({ email, password, role: "sme" });
       toast({
         title: "Success",
         description: "Signed in successfully!",
       });
-      navigate('/dashboard/sme');
+      navigate("/dashboard/sme");
     } catch (error) {
       toast({
-        title: "Error", 
+        title: "Error",
         description: error.message || "Failed to sign in",
         variant: "destructive",
       });
@@ -93,12 +108,12 @@ export default function FreelancerLogin() {
 
     setIsLoading(true);
     try {
-      await authenticatePhone({ phone, otp, role: 'sme' });
+      await authenticatePhone({ phone, otp, role: "sme" });
       toast({
         title: "Success",
         description: "Phone verified successfully!",
       });
-      navigate('/dashboard/sme');
+      navigate("/dashboard/sme");
     } catch (error) {
       toast({
         title: "Error",
@@ -115,12 +130,16 @@ export default function FreelancerLogin() {
     try {
       // Simulate wallet connection
       const walletAddress = "0x" + Math.random().toString(16).substr(2, 40);
-      await authenticateWallet({ walletAddress, signature: "mock_signature", role: 'sme' });
+      await authenticateWallet({
+        walletAddress,
+        signature: "mock_signature",
+        role: "sme",
+      });
       toast({
         title: "Success",
         description: "Wallet connected successfully!",
       });
-      navigate('/dashboard/sme');
+      navigate("/dashboard/sme");
     } catch (error) {
       toast({
         title: "Error",
@@ -164,11 +183,17 @@ export default function FreelancerLogin() {
           {/* Primary: Email/OTP Authentication */}
           <Tabs defaultValue="email" className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-muted">
-              <TabsTrigger value="email" className="data-[state=active]:bg-card">
+              <TabsTrigger
+                value="email"
+                className="data-[state=active]:bg-card"
+              >
                 <Mail className="h-4 w-4 mr-2" />
                 Email
               </TabsTrigger>
-              <TabsTrigger value="phone" className="data-[state=active]:bg-card">
+              <TabsTrigger
+                value="phone"
+                className="data-[state=active]:bg-card"
+              >
                 <Smartphone className="h-4 w-4 mr-2" />
                 Phone OTP
               </TabsTrigger>
@@ -216,14 +241,22 @@ export default function FreelancerLogin() {
                   <Checkbox
                     id="remember"
                     checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(Boolean(checked))}
+                    onCheckedChange={(checked) =>
+                      setRememberMe(Boolean(checked))
+                    }
                     disabled={isLoading}
                   />
-                  <Label htmlFor="remember" className="text-sm text-muted-foreground">
+                  <Label
+                    htmlFor="remember"
+                    className="text-sm text-muted-foreground"
+                  >
                     Remember me
                   </Label>
                 </div>
-                <Button variant="link" className="text-sm text-primary p-0 h-auto">
+                <Button
+                  variant="link"
+                  className="text-sm text-primary p-0 h-auto"
+                >
                   Forgot password?
                 </Button>
               </div>
@@ -321,7 +354,7 @@ export default function FreelancerLogin() {
                         "Verify & Sign In"
                       )}
                     </Button>
-                    
+
                     <Button
                       variant="outline"
                       onClick={() => setShowOTP(false)}
@@ -376,7 +409,7 @@ export default function FreelancerLogin() {
             <Button
               variant="secondary"
               className="w-full bg-white text-primary hover:bg-white/90"
-              onClick={() => navigate('/signup?role=sme')}
+              onClick={() => navigate("/signup?role=sme")}
             >
               <Users className="h-4 w-4 mr-2" />
               Create SME Account

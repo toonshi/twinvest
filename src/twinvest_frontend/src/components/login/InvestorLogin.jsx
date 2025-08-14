@@ -6,8 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Wallet, Shield, Mail, Lock, AlertCircle, Building2 } from "lucide-react";
-import LoginLayout from "./LoginLayout";
+import {
+  Wallet,
+  Shield,
+  Mail,
+  Lock,
+  AlertCircle,
+  Building2,
+} from "lucide-react";
+import LoginLayout from "../LoginLayout";
 
 export default function InvestorLogin() {
   const [email, setEmail] = useState("");
@@ -61,7 +68,7 @@ export default function InvestorLogin() {
                   <Wallet className="h-5 w-5 mr-2" />
                   Connect Wallet
                 </Button>
-                
+
                 <Button
                   onClick={handleICPLogin}
                   variant="outline"
@@ -124,11 +131,17 @@ export default function InvestorLogin() {
                       checked={rememberMe}
                       onCheckedChange={(checked) => setRememberMe(!!checked)}
                     />
-                    <Label htmlFor="remember" className="text-sm text-muted-foreground">
+                    <Label
+                      htmlFor="remember"
+                      className="text-sm text-muted-foreground"
+                    >
                       Remember me
                     </Label>
                   </div>
-                  <Button variant="link" className="text-sm text-primary p-0 h-auto">
+                  <Button
+                    variant="link"
+                    className="text-sm text-primary p-0 h-auto"
+                  >
                     Forgot password?
                   </Button>
                 </div>
@@ -187,7 +200,7 @@ export default function InvestorLogin() {
                 >
                   Verify & Sign In
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   onClick={() => setShow2FA(false)}
@@ -203,7 +216,10 @@ export default function InvestorLogin() {
           <div className="text-center pt-4 border-t border-border">
             <p className="text-sm text-muted-foreground">
               New to Twinvest?{" "}
-              <Button variant="link" className="text-primary p-0 h-auto font-medium">
+              <Button
+                variant="link"
+                className="text-primary p-0 h-auto font-medium"
+              >
                 Create investor account
               </Button>
             </p>

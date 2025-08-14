@@ -13,9 +13,9 @@ import {
   AlertTriangle,
   Lock,
   Eye,
-  Server
+  Server,
 } from "lucide-react";
-import LoginLayout from "./LoginLayout";
+import LoginLayout from "../LoginLayout";
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -164,7 +164,9 @@ export default function AdminLogin() {
             <div className="space-y-4">
               <div className="text-center space-y-2">
                 <Smartphone className="h-8 w-8 text-primary mx-auto" />
-                <h3 className="font-medium">Two-Factor Authentication Required</h3>
+                <h3 className="font-medium">
+                  Two-Factor Authentication Required
+                </h3>
                 <p className="text-sm text-muted-foreground">
                   Enter the code from your authenticator app or hardware token
                 </p>
