@@ -17,9 +17,9 @@ import TestimonialsSection from "./components/TestimonialsSection";
 import RoleSelector from "./components/RoleSelector";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-// Login components
+// Enhanced Login components
 import FreelancerLogin from "./components/login/FreelancerLogin";
-import InvestorLogin from "./components/login/InvestorLogin";
+import InvestorLogin from "./components/login/InvestorLogin"; // This will use our enhanced version
 import ClientLogin from "./components/login/ClientLogin";
 import AdminLogin from "./components/login/AdminLogin";
 
