@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Building2, Mail, Lock, Key, Shield, CreditCard, FileText, Users } from "lucide-react";
-import LoginLayout from "../LoginLayout";
+import LoginLayout from "./LoginLayout";
 
 export default function ClientLogin() {
   const [email, setEmail] = useState("");

@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Wallet, Shield, Mail, Lock, AlertCircle, Building2 } from "lucide-react";
-import LoginLayout from "../LoginLayout";
+import LoginLayout from "./LoginLayout";
 
 export default function InvestorLogin() {
   const [email, setEmail] = useState("");

@@ -80,22 +80,22 @@ export const getUserRole = () => {
 export const ROLE_ROUTES = {
   sme: {
     dashboard: '/dashboard/sme',
-    login: '/signin?role=sme',
+    login: '/login/sme',
     title: 'SME / Freelancer'
   },
   investor: {
     dashboard: '/dashboard/investor', 
-    login: '/signin?role=investor',
+    login: '/login/investor',
     title: 'Investor'
   },
   client: {
     dashboard: '/dashboard/client',
-    login: '/signin?role=client', 
+    login: '/login/client', 
     title: 'Client / Payer'
   },
   admin: {
     dashboard: '/dashboard/admin',
-    login: '/signin?role=admin',
+    login: '/login/admin',
     title: 'Platform Admin'
   }
 };
@@ -108,10 +108,10 @@ export const getRoleConfig = (role) => {
 };
 
 /**
- * Mock authentication functions (replace with actual API calls)
+ * Authentication methods for different login types
  */
-export const authenticateTraditional = async ({ email, password, role }) => {
-  // Simulate API call
+export const authenticateEmail = async ({ email, password, role }) => {
+  // Simulate API call for email/password authentication
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       if (email && password) {
@@ -119,7 +119,8 @@ export const authenticateTraditional = async ({ email, password, role }) => {
           id: Math.random().toString(36).substr(2, 9),
           email,
           role: role || 'sme',
-          name: email.split('@')[0]
+          name: email.split('@')[0],
+          authType: 'email'
         };
         
         saveUserSession(userData, role);
@@ -129,6 +130,105 @@ export const authenticateTraditional = async ({ email, password, role }) => {
       }
     }, 1000);
   });
+};
+
+export const authenticatePhone = async ({ phone, otp, role }) => {
+  // Simulate API call for phone/OTP authentication
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (phone && otp && otp.length === 6) {
+        const userData = {
+          id: Math.random().toString(36).substr(2, 9),
+          phone,
+          role: role || 'sme',
+          name: `User ${phone.slice(-4)}`,
+          authType: 'phone'
+        };
+        
+        saveUserSession(userData, role);
+        resolve(userData);
+      } else {
+        reject(new Error('Invalid OTP'));
+      }
+    }, 1000);
+  });
+};
+
+export const authenticateWallet = async ({ walletAddress, signature, role }) => {
+  // Simulate API call for wallet authentication
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (walletAddress) {
+        const userData = {
+          id: Math.random().toString(36).substr(2, 9),
+          walletAddress,
+          role: role || 'investor',
+          name: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
+          authType: 'wallet'
+        };
+        
+        saveUserSession(userData, role);
+        resolve(userData);
+      } else {
+        reject(new Error('Wallet connection failed'));
+      }
+    }, 1500);
+  });
+};
+
+export const authenticateSSO = async ({ provider, token, role }) => {
+  // Simulate API call for SSO authentication
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (provider && token) {
+        const userData = {
+          id: Math.random().toString(36).substr(2, 9),
+          provider,
+          role: role || 'client',
+          name: `${provider} User`,
+          authType: 'sso'
+        };
+        
+        saveUserSession(userData, role);
+        resolve(userData);
+      } else {
+        reject(new Error('SSO authentication failed'));
+      }
+    }, 1200);
+  });
+};
+
+export const authenticate2FA = async ({ userId, code }) => {
+  // Simulate API call for 2FA verification
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (code && code.length === 6) {
+        resolve({ verified: true });
+      } else {
+        reject(new Error('Invalid 2FA code'));
+      }
+    }, 800);
+  });
+};
+
+export const sendOTP = async (phone) => {
+  // Simulate API call to send OTP
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (phone) {
+        resolve({ sent: true, message: `OTP sent to ${phone}` });
+      } else {
+        reject(new Error('Invalid phone number'));
+      }
+    }, 1000);
+  });
+};
+
+/**
+ * Traditional registration (kept for backward compatibility)
+ */
+export const authenticateTraditional = async ({ email, password, role }) => {
+  return authenticateEmail({ email, password, role });
 };
 
 export const registerTraditional = async (formData) => {
@@ -142,7 +242,8 @@ export const registerTraditional = async (formData) => {
           role: formData.role || 'sme',
           name: `${formData.firstName} ${formData.lastName}`,
           firstName: formData.firstName,
-          lastName: formData.lastName
+          lastName: formData.lastName,
+          authType: 'email'
         };
         
         saveUserSession(userData, formData.role);

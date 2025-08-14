@@ -1,73 +1,66 @@
 // src/hooks/useUserRole.js
 import { useState, useEffect } from 'react';
+import { getUserRole, getUserSession, getRoleConfig, isAuthenticated } from '../lib/auth';
 
-/**
- * Custom hook to manage user role state and persistence
- */
 export const useUserRole = () => {
   const [userRole, setUserRole] = useState(null);
+  const [userSession, setUserSession] = useState(null);
   const [hasStoredRole, setHasStoredRole] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Check for stored role preference
-    const storedRole = localStorage.getItem('selectedRole');
-    const storedUser = localStorage.getItem('userSession');
-    
-    if (storedRole && storedUser) {
-      setUserRole(storedRole);
-      setHasStoredRole(true);
-    }
-    
-    setIsLoading(false);
-  }, []);
+    // Get initial values
+    const role = getUserRole();
+    const session = getUserSession();
+    const authenticated = isAuthenticated();
 
-  const saveUserRole = (role) => {
     setUserRole(role);
-    setHasStoredRole(true);
-    localStorage.setItem('selectedRole', role);
-  };
+    setUserSession(session);
+    setHasStoredRole(!!role);
+    setIsLoggedIn(authenticated);
 
-  const clearUserRole = () => {
-    setUserRole(null);
-    setHasStoredRole(false);
-    localStorage.removeItem('selectedRole');
-    localStorage.removeItem('userSession');
-  };
+    // Listen for storage changes (if user logs in/out in another tab)
+    const handleStorageChange = (event) => {
+      if (event.key === 'selectedRole' || event.key === 'userSession') {
+        const newRole = getUserRole();
+        const newSession = getUserSession();
+        const newAuth = isAuthenticated();
 
-  const getUserRoleConfig = (role) => {
-    const roles = {
-      sme: {
-        title: 'SME / Freelancer',
-        dashboardPath: '/dashboard/sme',
-        loginPath: '/signin?role=sme'
-      },
-      investor: {
-        title: 'Investor',
-        dashboardPath: '/dashboard/investor',
-        loginPath: '/signin?role=investor'
-      },
-      client: {
-        title: 'Client / Payer',
-        dashboardPath: '/dashboard/client',
-        loginPath: '/signin?role=client'
-      },
-      admin: {
-        title: 'Platform Admin',
-        dashboardPath: '/dashboard/admin',
-        loginPath: '/signin?role=admin'
+        setUserRole(newRole);
+        setUserSession(newSession);
+        setHasStoredRole(!!newRole);
+        setIsLoggedIn(newAuth);
       }
     };
-    
-    return roles[role] || null;
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  const getUserRoleConfig = (role) => {
+    return getRoleConfig(role);
+  };
+
+  const updateUserRole = (newRole) => {
+    setUserRole(newRole);
+    setHasStoredRole(!!newRole);
+  };
+
+  const updateUserSession = (newSession) => {
+    setUserSession(newSession);
+    setIsLoggedIn(!!newSession);
   };
 
   return {
     userRole,
+    userSession,
     hasStoredRole,
-    isLoading,
-    saveUserRole,
-    clearUserRole,
-    getUserRoleConfig
+    isLoggedIn,
+    getUserRoleConfig,
+    updateUserRole,
+    updateUserSession
   };
 };

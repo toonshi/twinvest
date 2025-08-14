@@ -15,7 +15,7 @@ import {
   Eye,
   Server
 } from "lucide-react";
-import LoginLayout from "../LoginLayout";
+import LoginLayout from "./LoginLayout";
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");

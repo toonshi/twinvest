@@ -6,9 +6,11 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Wallet, Mail, Lock, Smartphone, FileText, DollarSign, Zap } from "lucide-react";
-import LoginLayout from "../LoginLayout";
-
+import { Users, Wallet, Mail, Lock, Smartphone, FileText, DollarSign, Zap, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/components/ui/use-toast";
+import LoginLayout from "./LoginLayout";
+import { authenticateEmail, authenticatePhone, authenticateWallet, sendOTP } from "../../lib/auth";
 
 export default function FreelancerLogin() {
   const [email, setEmail] = useState("");
@@ -17,24 +19,117 @@ export default function FreelancerLogin() {
   const [otp, setOtp] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleEmailLogin = () => {
-    console.log("Email login:", { email, password });
-  };
+  const handleEmailLogin = async () => {
+    if (!email || !password) {
+      toast({
+        title: "Error",
+        description: "Please enter both email and password",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const handleSendOTP = () => {
-    if (phone) {
-      setShowOTP(true);
-      console.log("Sending OTP to:", phone);
+    setIsLoading(true);
+    try {
+      await authenticateEmail({ email, password, role: 'sme' });
+      toast({
+        title: "Success",
+        description: "Signed in successfully!",
+      });
+      navigate('/dashboard/sme');
+    } catch (error) {
+      toast({
+        title: "Error", 
+        description: error.message || "Failed to sign in",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleVerifyOTP = () => {
-    console.log("Verifying OTP:", otp);
+  const handleSendOTP = async () => {
+    if (!phone) {
+      toast({
+        title: "Error",
+        description: "Please enter your phone number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      await sendOTP(phone);
+      setShowOTP(true);
+      toast({
+        title: "OTP Sent",
+        description: `Verification code sent to ${phone}`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send OTP",
+        variant: "destructive",
+      });
+    } finally {
+      setOtpLoading(false);
+    }
   };
 
-  const handleWalletConnect = () => {
-    console.log("Connecting wallet...");
+  const handleVerifyOTP = async () => {
+    if (!otp || otp.length !== 6) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid 6-digit OTP",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await authenticatePhone({ phone, otp, role: 'sme' });
+      toast({
+        title: "Success",
+        description: "Phone verified successfully!",
+      });
+      navigate('/dashboard/sme');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Invalid OTP",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleWalletConnect = async () => {
+    setIsLoading(true);
+    try {
+      // Simulate wallet connection
+      const walletAddress = "0x" + Math.random().toString(16).substr(2, 40);
+      await authenticateWallet({ walletAddress, signature: "mock_signature", role: 'sme' });
+      toast({
+        title: "Success",
+        description: "Wallet connected successfully!",
+      });
+      navigate('/dashboard/sme');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to connect wallet",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -93,6 +188,7 @@ export default function FreelancerLogin() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-11 bg-input border-border"
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -110,6 +206,7 @@ export default function FreelancerLogin() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 h-11 bg-input border-border"
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -120,6 +217,7 @@ export default function FreelancerLogin() {
                     id="remember"
                     checked={rememberMe}
                     onCheckedChange={(checked) => setRememberMe(Boolean(checked))}
+                    disabled={isLoading}
                   />
                   <Label htmlFor="remember" className="text-sm text-muted-foreground">
                     Remember me
@@ -132,10 +230,17 @@ export default function FreelancerLogin() {
 
               <Button
                 onClick={handleEmailLogin}
-                disabled={!email || !password}
+                disabled={!email || !password || isLoading}
                 className="w-full h-11"
               >
-                Sign In to SME Account
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign In to SME Account"
+                )}
               </Button>
             </TabsContent>
 
@@ -155,16 +260,24 @@ export default function FreelancerLogin() {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className="pl-10 h-11 bg-input border-border"
+                        disabled={otpLoading}
                       />
                     </div>
                   </div>
 
                   <Button
                     onClick={handleSendOTP}
-                    disabled={!phone}
+                    disabled={!phone || otpLoading}
                     className="w-full h-11"
                   >
-                    Send OTP Code
+                    {otpLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sending OTP...
+                      </>
+                    ) : (
+                      "Send OTP Code"
+                    )}
                   </Button>
                 </>
               ) : (
@@ -189,22 +302,31 @@ export default function FreelancerLogin() {
                       onChange={(e) => setOtp(e.target.value)}
                       className="text-center text-lg tracking-widest h-12"
                       maxLength={6}
+                      disabled={isLoading}
                     />
                   </div>
 
                   <div className="space-y-3">
                     <Button
                       onClick={handleVerifyOTP}
-                      disabled={otp.length !== 6}
+                      disabled={otp.length !== 6 || isLoading}
                       className="w-full h-11"
                     >
-                      Verify & Sign In
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Verifying...
+                        </>
+                      ) : (
+                        "Verify & Sign In"
+                      )}
                     </Button>
                     
                     <Button
                       variant="outline"
                       onClick={() => setShowOTP(false)}
                       className="w-full h-11"
+                      disabled={isLoading}
                     >
                       Change phone number
                     </Button>
@@ -228,9 +350,19 @@ export default function FreelancerLogin() {
             onClick={handleWalletConnect}
             variant="outline"
             className="w-full h-12 border-primary/20 hover:border-primary hover:bg-primary/5"
+            disabled={isLoading}
           >
-            <Wallet className="h-5 w-5 mr-2" />
-            Connect Crypto Wallet
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Connecting...
+              </>
+            ) : (
+              <>
+                <Wallet className="h-5 w-5 mr-2" />
+                Connect Crypto Wallet
+              </>
+            )}
           </Button>
 
           {/* Prominent Sign up CTA */}
@@ -244,6 +376,7 @@ export default function FreelancerLogin() {
             <Button
               variant="secondary"
               className="w-full bg-white text-primary hover:bg-white/90"
+              onClick={() => navigate('/signup?role=sme')}
             >
               <Users className="h-4 w-4 mr-2" />
               Create SME Account

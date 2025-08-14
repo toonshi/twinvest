@@ -17,6 +17,12 @@ import TestimonialsSection from "./components/TestimonialsSection";
 import RoleSelector from "./components/RoleSelector";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+// Login components
+import FreelancerLogin from "./components/login/FreelancerLogin";
+import InvestorLogin from "./components/login/InvestorLogin";
+import ClientLogin from "./components/login/ClientLogin";
+import AdminLogin from "./components/login/AdminLogin";
+
 // Dashboard components
 import { DashboardOverview } from "./components/DashboardOverview";
 import { InvoiceManagement } from "./components/InvoiceManagement";
@@ -63,7 +69,8 @@ const AppContent = () => {
 
   const hideNavbar =
     ["/signin", "/signup", "/dashboard", "/role-selector"].includes(location.pathname) ||
-    location.pathname.startsWith("/dashboard/");
+    location.pathname.startsWith("/dashboard/") ||
+    location.pathname.startsWith("/login/");
 
   return (
     <>
@@ -80,6 +87,12 @@ const AppContent = () => {
           <Route path="/about" element={<TestimonialsSection />} />
 
           <Route path="/role-selector" element={<RoleSelector />} />
+
+          {/* Individual Login Routes */}
+          <Route path="/login/sme" element={<FreelancerLogin />} />
+          <Route path="/login/investor" element={<InvestorLogin />} />
+          <Route path="/login/client" element={<ClientLogin />} />
+          <Route path="/login/admin" element={<AdminLogin />} />
 
           <Route
             path="/dashboard"

@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Coins, ArrowLeft, Users, TrendingUp, DollarSign, Shield } from 'lucide-react';
+import { Coins, ArrowLeft, Users, TrendingUp, DollarSign, Shield, Loader2 } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { loginWithII, routeByRole } from '../lib/icp';
 import { toast } from '@/components/ui/use-toast';
+import { saveUserSession } from '../lib/auth';
 
 // Import your role-based login components
 import FreelancerLogin from '@/components/login/FreelancerLogin';
@@ -64,20 +63,28 @@ const SignIn = () => {
     setIsICPLoading(true);
     
     try {
-      const { actor } = await loginWithII();
-      const roleOpt = await actor.get_my_role();
-      
-      if (roleOpt.length) {
-        routeByRole(roleOpt[0], navigate);
-        toast({
-          title: "Success",
-          description: "Signed in with ICP Identity successfully!",
-        });
-      } else {
+      // Simulate ICP login - replace with actual ICP integration
+      const mockUser = {
+        id: 'icp_' + Math.random().toString(36).substr(2, 9),
+        name: 'ICP User',
+        authType: 'icp'
+      };
+
+      // If no role is selected, save session but redirect to role selector
+      if (!selectedRole) {
+        saveUserSession(mockUser);
         navigate('/role-selector');
         toast({
           title: "Welcome",
           description: "Please select your role to continue.",
+        });
+      } else {
+        // Save session with role and redirect to dashboard
+        saveUserSession({ ...mockUser, role: selectedRole }, selectedRole);
+        navigate(`/dashboard/${selectedRole}`);
+        toast({
+          title: "Success",
+          description: "Signed in with ICP Identity successfully!",
         });
       }
     } catch (error) {
@@ -94,8 +101,8 @@ const SignIn = () => {
 
   const handleRoleSelect = (roleId) => {
     setSelectedRole(roleId);
-    // Update URL to reflect selected role
-    navigate(`/signin?role=${roleId}`, { replace: true });
+    // Redirect to specific login page
+    navigate(`/login/${roleId}`);
   };
 
   const handleBackToRoles = () => {
@@ -176,7 +183,7 @@ const SignIn = () => {
             >
               {isICPLoading ? (
                 <>
-                  <div className="mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Connecting with ICP...
                 </>
               ) : (

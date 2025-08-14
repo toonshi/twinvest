@@ -4,18 +4,24 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Coins, Menu, X, LogIn, UserPlus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useUserRole } from '@/hooks/useUserRole';
+import { getUserRole, getUserSession, getRoleConfig, isAuthenticated } from '../lib/auth';
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { userRole, hasStoredRole, getUserRoleConfig } = useUserRole();
   const navigate = useNavigate();
+
+  const userRole = getUserRole();
+  const userSession = getUserSession();
+  const isLoggedIn = isAuthenticated();
 
   // Role-aware navigation handlers
   const handleSignIn = () => {
-    if (hasStoredRole && userRole) {
-      const config = getUserRoleConfig(userRole);
-      navigate(config.loginPath);
+    if (isLoggedIn && userRole) {
+      const config = getRoleConfig(userRole);
+      navigate(config.dashboard);
+    } else if (userRole) {
+      const config = getRoleConfig(userRole);
+      navigate(config.login);
     } else {
       navigate('/signin');
     }
@@ -26,9 +32,9 @@ const NavBar = () => {
   };
 
   const handleGetStarted = () => {
-    if (hasStoredRole && userRole) {
-      const config = getUserRoleConfig(userRole);
-      navigate(config.dashboardPath);
+    if (isLoggedIn && userRole) {
+      const config = getRoleConfig(userRole);
+      navigate(config.dashboard);
     } else {
       navigate('/role-selector');
     }
@@ -39,7 +45,7 @@ const NavBar = () => {
     { href: '/features', label: 'Features' },
     { href: '/marketplace', label: 'Marketplace' },
     { href: '/about', label: 'About' },
-    { href: '/dashboard', label: 'Dashboard' },
+    ...(isLoggedIn ? [{ href: '/dashboard', label: 'Dashboard' }] : [])
   ];
 
   return (
@@ -76,14 +82,28 @@ const NavBar = () => {
 
             {/* Desktop Auth Buttons */}
             <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" className="hover-ball" onClick={handleSignIn}>
-                <LogIn className="h-4 w-4 mr-2" />
-                Sign In
-              </Button>
-              <Button className="hero-button" onClick={handleSignUp}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Get Started
-              </Button>
+              {isLoggedIn ? (
+                <div className="flex items-center space-x-4">
+                  <span className="text-sm text-muted-foreground">
+                    Welcome, {userSession?.name || 'User'}
+                  </span>
+                  <Button variant="ghost" className="hover-ball" onClick={handleSignIn}>
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Button variant="ghost" className="hover-ball" onClick={handleSignIn}>
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Button>
+                  <Button className="hero-button" onClick={handleSignUp}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Get Started
+                  </Button>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -117,27 +137,48 @@ const NavBar = () => {
                   </Link>
                 ))}
                 <div className="flex flex-col space-y-2 pt-4">
-                  <Button
-                    variant="ghost"
-                    className="w-full hover-ball"
-                    onClick={() => {
-                      handleSignIn();
-                      setIsOpen(false);
-                    }}
-                  >
-                    <LogIn className="h-4 w-4 mr-2" />
-                    Sign In
-                  </Button>
-                  <Button
-                    className="w-full hero-button"
-                    onClick={() => {
-                      handleSignUp();
-                      setIsOpen(false);
-                    }}
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Get Started
-                  </Button>
+                  {isLoggedIn ? (
+                    <>
+                      <div className="text-sm text-muted-foreground mb-2">
+                        Welcome, {userSession?.name || 'User'}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        className="w-full hover-ball"
+                        onClick={() => {
+                          handleSignIn();
+                          setIsOpen(false);
+                        }}
+                      >
+                        <LogIn className="h-4 w-4 mr-2" />
+                        Dashboard
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        variant="ghost"
+                        className="w-full hover-ball"
+                        onClick={() => {
+                          handleSignIn();
+                          setIsOpen(false);
+                        }}
+                      >
+                        <LogIn className="h-4 w-4 mr-2" />
+                        Sign In
+                      </Button>
+                      <Button
+                        className="w-full hero-button"
+                        onClick={() => {
+                          handleSignUp();
+                          setIsOpen(false);
+                        }}
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Get Started
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>
