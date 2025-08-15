@@ -21,9 +21,10 @@ import {
   CheckCircle,
   BarChart3
 } from "lucide-react";
+import { loginWithII, roleVariant, getRoleKey } from "@/lib/icp";
 
 export default function InvestorLogin() {
-  const [email, setEmail] = useState("fabbydebby@gmail.com");
+  const [email, setEmail] = useState("example@gmail.com");
   const [password, setPassword] = useState("••••••••");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -35,7 +36,6 @@ export default function InvestorLogin() {
   const handleWalletConnect = async () => {
     setIsLoading(true);
     setConnectionType("wallet");
-    
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
       alert("Wallet Connected Successfully! Redirecting to dashboard...");
@@ -52,13 +52,10 @@ export default function InvestorLogin() {
       alert("Missing Information: Please enter both email and password.");
       return;
     }
-
     setIsLoading(true);
     setConnectionType("email");
-    
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
       if (email && password) {
         setShow2FA(true);
         alert("Credentials Verified: Please complete two-factor authentication.");
@@ -74,10 +71,16 @@ export default function InvestorLogin() {
   const handleICPLogin = async () => {
     setIsLoading(true);
     setConnectionType("icp");
-    
     try {
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      const { actor } = await loginWithII();
+      const roleOpt = await actor.get_my_role();
+      let roleKey = roleOpt && roleOpt.length ? getRoleKey(roleOpt[0]) : null;
+      if (!roleKey) {
+        await actor.set_my_role(roleVariant("investor"));
+        roleKey = "investor";
+      }
       alert("ICP Identity Connected Successfully! Redirecting to dashboard...");
+      // Optional: navigate(`/dashboard/${roleKey}`);
     } catch (error) {
       alert("ICP Connection Failed: Unable to connect with Internet Identity.");
     } finally {
@@ -89,7 +92,6 @@ export default function InvestorLogin() {
   const handleInstitutionalSSO = async () => {
     setIsLoading(true);
     setConnectionType("sso");
-    
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
       alert("SSO Authentication: Redirecting to institutional login portal...");
@@ -106,9 +108,7 @@ export default function InvestorLogin() {
       alert("Invalid Code: Please enter a valid 6-digit authentication code.");
       return;
     }
-
     setIsLoading(true);
-    
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
       alert("Authentication Successful: Welcome to your investor dashboard!");
@@ -120,7 +120,6 @@ export default function InvestorLogin() {
   };
 
   const handleBackToRoles = () => {
-    // This would work with proper routing
     window.history.back();
     alert("Going back to role selection...");
   };
@@ -131,11 +130,8 @@ export default function InvestorLogin() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex">
-      {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-950">
-        {/* Subtle vertical separator line */}
         <div className="absolute right-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-slate-700 to-transparent"></div>
-        
         <div className="flex flex-col justify-center items-center p-8 relative z-10 w-full">
           <div className="text-center max-w-md">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-4">
@@ -144,8 +140,6 @@ export default function InvestorLogin() {
             <p className="text-sm text-center text-gray-400 leading-relaxed mb-12">
               Revolutionizing invoice financing through blockchain technology
             </p>
-            
-            {/* Investment Statistics - Better aligned */}
             <div className="grid grid-cols-2 gap-12">
               <div className="text-center space-y-2">
                 <div className="text-2xl font-bold text-blue-400">$2.4B+</div>
@@ -160,9 +154,7 @@ export default function InvestorLogin() {
         </div>
       </div>
 
-      {/* Right Side - Login Form */}
       <div className="w-full lg:w-1/2 flex flex-col bg-slate-950">
-        {/* Top Navigation - Better aligned */}
         <div className="p-6 flex justify-between items-center">
           <Button
             variant="ghost"
@@ -175,17 +167,14 @@ export default function InvestorLogin() {
           </Button>
         </div>
 
-        {/* Main Content */}
         <div className="flex-1 flex items-center justify-center px-6 pb-6">
           <div className="w-full max-w-md">
-            {/* Form Header - Right aligned as shown in screenshot */}
             <div className="text-right mb-8">
               <h2 className="text-2xl font-semibold text-white mb-2">Investor Portal</h2>
               <p className="text-sm text-gray-400">Access your investment dashboard and portfolio</p>
             </div>
 
             <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-lg p-6 space-y-6">
-              {/* KYC Status - Better spacing */}
               <div className="flex items-center justify-between p-3 rounded-md bg-slate-800/50">
                 <div className="flex items-center space-x-2">
                   <Shield className="h-4 w-4 text-purple-400" />
@@ -198,7 +187,6 @@ export default function InvestorLogin() {
 
               {!show2FA ? (
                 <>
-                  {/* Connect Wallet Button */}
                   <Button
                     onClick={handleWalletConnect}
                     disabled={isLoading}
@@ -217,7 +205,6 @@ export default function InvestorLogin() {
                     )}
                   </Button>
 
-                  {/* ICP Identity Button */}
                   <Button
                     onClick={handleICPLogin}
                     disabled={isLoading}
@@ -237,7 +224,6 @@ export default function InvestorLogin() {
                     )}
                   </Button>
 
-                  {/* Separator - Better styling */}
                   <div className="relative my-6">
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t border-slate-700"></div>
@@ -247,7 +233,6 @@ export default function InvestorLogin() {
                     </div>
                   </div>
 
-                  {/* Email Section - Better spacing */}
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-sm text-gray-300 font-medium">
@@ -292,7 +277,6 @@ export default function InvestorLogin() {
                       </div>
                     </div>
 
-                    {/* Remember Me & Forgot Password - Better alignment */}
                     <div className="flex items-center justify-between py-2">
                       <div className="flex items-center space-x-2">
                         <Checkbox
@@ -310,7 +294,6 @@ export default function InvestorLogin() {
                       </Button>
                     </div>
 
-                    {/* Sign In Button */}
                     <Button
                       onClick={handleEmailLogin}
                       disabled={!email || !password || isLoading}
@@ -327,7 +310,6 @@ export default function InvestorLogin() {
                     </Button>
                   </div>
 
-                  {/* Institutional SSO - Better spacing */}
                   <div className="pt-4 border-t border-slate-800">
                     <Button
                       onClick={handleInstitutionalSSO}
@@ -350,7 +332,6 @@ export default function InvestorLogin() {
                   </div>
                 </>
               ) : (
-                /* 2FA Screen */
                 <div className="space-y-6">
                   <div className="text-center space-y-3">
                     <AlertCircle className="h-10 w-10 text-purple-400 mx-auto" />
@@ -407,7 +388,6 @@ export default function InvestorLogin() {
                 </div>
               )}
 
-              {/* Create Account - Better styling */}
               <div className="text-center pt-4 border-t border-slate-800">
                 <p className="text-sm text-gray-400">
                   New to Twinvest?{" "}
@@ -422,7 +402,6 @@ export default function InvestorLogin() {
               </div>
             </div>
 
-            {/* Footer Links - Better spacing */}
             <div className="mt-6 text-center">
               <div className="flex justify-center space-x-6 text-sm text-gray-500">
                 <a href="#" className="hover:text-purple-400 transition-colors">Privacy</a>
