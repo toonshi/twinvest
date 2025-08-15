@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 import { Coins, ArrowLeft, Users, TrendingUp, DollarSign, Shield, Loader2 } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -16,7 +15,6 @@ import AdminLogin from '@/components/login/AdminLogin';
 
 const SignIn = () => {
   const [selectedRole, setSelectedRole] = useState(null);
-  const [isICPLoading, setIsICPLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -32,72 +30,36 @@ const SignIn = () => {
     { 
       id: 'sme', 
       title: 'SME / Freelancer', 
-      description: 'Upload invoices and get funded', 
+      description: 'Upload invoices and get funded instantly',
+      subtext: 'Upload invoices\nGet instant funding\nTokenize receivables',
       icon: Users, 
       color: 'from-primary/20 to-accent/20 border-primary/30' 
     },
     { 
       id: 'investor', 
       title: 'Investor', 
-      description: 'Browse and invest in invoice NFTs', 
+      description: 'Invest in tokenized invoice NFTs',
+      subtext: 'Browse investments\nDiversified returns\nTransparent yields',
       icon: TrendingUp, 
       color: 'from-success/20 to-primary/20 border-success/30' 
     },
     { 
       id: 'client', 
       title: 'Client / Payer', 
-      description: 'Manage and pay invoices', 
+      description: 'Manage and pay invoices efficiently',
+      subtext: 'Pay invoices\nTrack payments\nEnterprise features',
       icon: DollarSign, 
       color: 'from-accent/20 to-secondary/20 border-accent/30' 
     },
     { 
       id: 'admin', 
       title: 'Platform Admin', 
-      description: 'Platform operations management', 
+      description: 'Manage platform operations',
+      subtext: 'User management\nAnalytics dashboard\nSystem controls',
       icon: Shield, 
       color: 'from-warning/20 to-destructive/20 border-warning/30' 
     }
   ];
-
-  const handleICPLogin = async () => {
-    setIsICPLoading(true);
-    
-    try {
-      // Simulate ICP login - replace with actual ICP integration
-      const mockUser = {
-        id: 'icp_' + Math.random().toString(36).substr(2, 9),
-        name: 'ICP User',
-        authType: 'icp'
-      };
-
-      // If no role is selected, save session but redirect to role selector
-      if (!selectedRole) {
-        saveUserSession(mockUser);
-        navigate('/role-selector');
-        toast({
-          title: "Welcome",
-          description: "Please select your role to continue.",
-        });
-      } else {
-        // Save session with role and redirect to dashboard
-        saveUserSession({ ...mockUser, role: selectedRole }, selectedRole);
-        navigate(`/dashboard/${selectedRole}`);
-        toast({
-          title: "Success",
-          description: "Signed in with ICP Identity successfully!",
-        });
-      }
-    } catch (error) {
-      console.error('ICP login failed:', error);
-      toast({
-        title: "ICP Unavailable",
-        description: "Please try traditional sign-in or contact support.",
-        variant: "default",
-      });
-    } finally {
-      setIsICPLoading(false);
-    }
-  };
 
   const handleRoleSelect = (roleId) => {
     setSelectedRole(roleId);
@@ -140,113 +102,87 @@ const SignIn = () => {
     );
   }
 
-  // Role selection interface
+  // Role selection interface matching the design from your second image
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div 
-          className="absolute w-96 h-96 rounded-full opacity-20 -top-48 -left-48" 
-          style={{ background: 'var(--gradient-primary)' }} 
-          animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }} 
-          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }} 
-        />
-        <motion.div 
-          className="absolute w-64 h-64 rounded-full opacity-30 -bottom-32 -right-32" 
-          style={{ background: 'var(--gradient-secondary)' }} 
-          animate={{ scale: [1.2, 1, 1.2], rotate: [360, 180, 0] }} 
-          transition={{ duration: 15, repeat: Infinity, ease: 'linear' }} 
-        />
-      </div>
-
-      <motion.div 
-        initial={{ opacity: 0, y: 20, scale: 0.95 }} 
-        animate={{ opacity: 1, y: 0, scale: 1 }} 
-        transition={{ duration: 0.5 }} 
-        className="relative z-10 w-full max-w-5xl"
-      >
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-2 mb-6 hover-ball p-2 rounded-lg">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="w-full max-w-7xl space-y-8">
+        
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center space-x-2 mb-6">
             <Coins className="h-8 w-8 text-primary glow-effect" />
             <span className="text-2xl font-bold gradient-text">Twinvest</span>
-          </Link>
-          <h1 className="text-4xl font-bold mb-4">Welcome Back</h1>
-          <p className="text-muted-foreground text-lg">Select your role to access your dashboard</p>
+          </div>
+          <h1 className="text-4xl font-bold">Join Twinvest</h1>
+          <p className="text-muted-foreground text-lg">Choose your role and start revolutionizing cash flow</p>
         </div>
 
-        <div className="feature-card p-8 backdrop-blur-xl bg-card/80 mb-6">
-          {/* ICP Quick Login */}
-          <div className="text-center mb-8">
-            <Button 
-              onClick={handleICPLogin}
-              className="w-full max-w-md mx-auto h-12 bg-gradient-brand hover:opacity-90 text-primary-foreground font-medium"
-              disabled={isICPLoading}
-            >
-              {isICPLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Connecting with ICP...
-                </>
-              ) : (
-                <>
-                  <Shield className="h-5 w-5 mr-2" />
-                  Continue with ICP Identity
-                </>
-              )}
-            </Button>
-          </div>
-
-          <div className="relative mb-8">
-            <Separator />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="bg-card px-4 text-sm text-muted-foreground">
-                Or sign in with your role
-              </span>
-            </div>
-          </div>
-
-          {/* Role Selection Grid */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {roles.map((role) => {
-              const Icon = role.icon;
-              
-              return (
-                <Card
-                  key={role.id}
-                  className={`cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 bg-gradient-to-br ${role.color}`}
-                  onClick={() => handleRoleSelect(role.id)}
-                >
-                  <CardContent className="p-6 text-center">
-                    <div className="mx-auto w-12 h-12 rounded-full bg-background/80 flex items-center justify-center mb-4">
-                      <Icon className="h-6 w-6" />
-                    </div>
-                    <h3 className="font-semibold mb-2">{role.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-4">{role.description}</p>
-                    <Button variant="outline" size="sm" className="w-full">
-                      Sign In
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+        {/* "Or choose your role to sign up" */}
+        <div className="text-center">
+          <p className="text-muted-foreground">Or choose your role to sign up</p>
         </div>
 
-        <div className="text-center space-y-4">
-          <div className="text-muted-foreground">
-            Don't have an account?{' '}
-            <Link to="/signup" className="text-primary hover:underline font-medium">
-              Sign up here
-            </Link>
+        {/* Role Cards - Matching your second image design */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {roles.map((role) => {
+            const Icon = role.icon;
+            return (
+              <Card 
+                key={role.id} 
+                className="cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-105 bg-card border border-border"
+                onClick={() => handleRoleSelect(role.id)}
+              >
+                <CardContent className="p-6 text-center">
+                  {/* Icon */}
+                  <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <Icon className="h-8 w-8 text-primary" />
+                  </div>
+                  
+                  {/* Title */}
+                  <h3 className="text-xl font-semibold mb-2">{role.title}</h3>
+                  
+                  {/* Description */}
+                  <p className="text-sm text-muted-foreground mb-4">{role.description}</p>
+                  
+                  {/* Features */}
+                  <div className="space-y-2 mb-6">
+                    {role.subtext.split('\n').map((feature, idx) => (
+                      <div key={idx} className="flex items-center text-xs text-muted-foreground">
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full mr-2 flex-shrink-0" />
+                        {feature}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Get Started Button */}
+                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                    Get Started
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Bottom Navigation */}
+        <div className="text-center space-y-4 pt-8">
+          <div className="text-sm text-muted-foreground">
+            Already have an account? 
+            <Link to="/signin" className="text-primary hover:underline ml-1">Sign in here</Link>
           </div>
           
-          <Link to="/">
-            <Button variant="ghost" className="hover-ball">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Home
-            </Button>
-          </Link>
+          {/* Back to Home */}
+          <div>
+            <Link to="/">
+              <Button variant="ghost" className="hover-ball">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
         </div>
-      </motion.div>
+
+      </div>
     </div>
   );
 };

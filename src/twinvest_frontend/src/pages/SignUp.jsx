@@ -3,13 +3,11 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Coins, Eye, EyeOff, ArrowLeft, User, Mail, Lock, Loader2, Users, TrendingUp, DollarSign, Shield } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { loginWithII, routeByRole, registerTraditional } from '../lib/icp';
 import { toast } from '@/components/ui/use-toast';
 
 const SignUp = () => {
@@ -25,7 +23,6 @@ const SignUp = () => {
     agreeToTerms: false 
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [isICPLoading, setIsICPLoading] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -41,34 +38,34 @@ const SignUp = () => {
     { 
       id: 'sme', 
       title: 'SME / Freelancer', 
-      description: 'Upload invoices and get funded instantly', 
+      description: 'Upload invoices and get funded instantly',
+      subtext: 'Upload invoices\nGet instant funding\nTokenize receivables',
       icon: Users, 
-      color: 'from-primary/20 to-accent/20 border-primary/30',
-      benefits: ['Upload invoices', 'Get instant funding', 'Tokenize receivables']
+      color: 'from-primary/20 to-accent/20 border-primary/30'
     },
     { 
       id: 'investor', 
       title: 'Investor', 
-      description: 'Invest in tokenized invoice NFTs', 
+      description: 'Invest in tokenized invoice NFTs',
+      subtext: 'Browse investments\nDiversified returns\nTransparent yields',
       icon: TrendingUp, 
-      color: 'from-success/20 to-primary/20 border-success/30',
-      benefits: ['Browse investments', 'Diversified returns', 'Transparent yields']
+      color: 'from-success/20 to-primary/20 border-success/30'
     },
     { 
       id: 'client', 
       title: 'Client / Payer', 
-      description: 'Manage and pay invoices efficiently', 
+      description: 'Manage and pay invoices efficiently',
+      subtext: 'Pay invoices\nTrack payments\nEnterprise features',
       icon: DollarSign, 
-      color: 'from-accent/20 to-secondary/20 border-accent/30',
-      benefits: ['Pay invoices', 'Track payments', 'Enterprise features']
+      color: 'from-accent/20 to-secondary/20 border-accent/30'
     },
     { 
       id: 'admin', 
       title: 'Platform Admin', 
-      description: 'Manage platform operations', 
+      description: 'Manage platform operations',
+      subtext: 'User management\nAnalytics dashboard\nSystem controls',
       icon: Shield, 
-      color: 'from-warning/20 to-destructive/20 border-warning/30',
-      benefits: ['User management', 'Analytics dashboard', 'System controls']
+      color: 'from-warning/20 to-destructive/20 border-warning/30'
     }
   ];
 
@@ -94,10 +91,7 @@ const SignUp = () => {
         throw new Error('Please select a role');
       }
 
-      // Add role to form data
-      const registrationData = { ...formData, role: selectedRole };
-      await registerTraditional(registrationData);
-
+      // Simulate successful registration
       toast({
         title: "Success",
         description: `${roles.find(r => r.id === selectedRole)?.title} account created successfully!`,
@@ -117,38 +111,6 @@ const SignUp = () => {
     }
   };
 
-  const handleICPLogin = async () => {
-    setIsICPLoading(true);
-    
-    try {
-      const { actor } = await loginWithII();
-      const roleOpt = await actor.get_my_role();
-      
-      if (roleOpt.length) {
-        routeByRole(roleOpt[0], navigate);
-        toast({
-          title: "Success",
-          description: "Signed in with ICP Identity successfully!",
-        });
-      } else {
-        navigate('/role-selector');
-        toast({
-          title: "Welcome",
-          description: "Please select your role to continue.",
-        });
-      }
-    } catch (error) {
-      console.error('ICP login failed:', error);
-      toast({
-        title: "Error",
-        description: "Failed to sign in with ICP Identity. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsICPLoading(false);
-    }
-  };
-
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -164,22 +126,7 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div 
-          className="absolute w-96 h-96 rounded-full opacity-20 -top-48 -right-48" 
-          style={{ background: 'var(--gradient-primary)' }} 
-          animate={{ scale: [1, 1.1, 1], rotate: [0, -180, -360] }} 
-          transition={{ duration: 25, repeat: Infinity, ease: 'linear' }} 
-        />
-        <motion.div 
-          className="absolute w-64 h-64 rounded-full opacity-30 -bottom-32 -left-32" 
-          style={{ background: 'var(--gradient-secondary)' }} 
-          animate={{ scale: [1.1, 1, 1.1], rotate: [-360, -180, 0] }} 
-          transition={{ duration: 18, repeat: Infinity, ease: 'linear' }} 
-        />
-      </div>
-
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <motion.div 
         initial={{ opacity: 0, y: 20, scale: 0.95 }} 
         animate={{ opacity: 1, y: 0, scale: 1 }} 
@@ -187,10 +134,10 @@ const SignUp = () => {
         className="relative z-10 w-full max-w-6xl"
       >
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center space-x-2 mb-6 hover-ball p-2 rounded-lg">
+          <div className="flex items-center justify-center space-x-2 mb-6">
             <Coins className="h-8 w-8 text-primary glow-effect" />
             <span className="text-2xl font-bold gradient-text">Twinvest</span>
-          </Link>
+          </div>
           <h1 className="text-4xl font-bold mb-2">
             {selectedRole ? `Create ${roles.find(r => r.id === selectedRole)?.title} Account` : 'Join Twinvest'}
           </h1>
@@ -200,79 +147,57 @@ const SignUp = () => {
         </div>
 
         {!selectedRole ? (
-          /* Role Selection View */
+          /* Role Selection View - Matching the design from your second image */
           <div className="space-y-8">
-            <div className="feature-card p-8 backdrop-blur-xl bg-card/80">
-              {/* ICP Quick Signup */}
-              <div className="text-center mb-8">
-                <Button 
-                  onClick={handleICPLogin}
-                  className="w-full max-w-md mx-auto h-12 bg-gradient-brand hover:opacity-90 text-primary-foreground font-medium"
-                  disabled={isICPLoading}
-                >
-                  {isICPLoading ? (
-                    <>
-                      <div className="mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Connecting...
-                    </>
-                  ) : (
-                    <>
-                      <Shield className="h-5 w-5 mr-2" />
-                      Continue with ICP Identity
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              <div className="relative mb-8">
-                <Separator />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="bg-card px-4 text-sm text-muted-foreground">
-                    Or choose your role to sign up
-                  </span>
-                </div>
-              </div>
-
-              {/* Role Selection Grid */}
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
-                {roles.map((role) => {
-                  const Icon = role.icon;
-                  
-                  return (
-                    <Card
-                      key={role.id}
-                      className={`cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 bg-gradient-to-br ${role.color}`}
-                      onClick={() => handleRoleSelect(role.id)}
-                    >
-                      <CardContent className="p-6">
-                        <div className="text-center mb-4">
-                          <div className="mx-auto w-12 h-12 rounded-full bg-background/80 flex items-center justify-center mb-3">
-                            <Icon className="h-6 w-6" />
-                          </div>
-                          <h3 className="font-semibold text-lg mb-2">{role.title}</h3>
-                          <p className="text-sm text-muted-foreground mb-4">{role.description}</p>
-                        </div>
-                        
-                        <div className="space-y-2 mb-4">
-                          {role.benefits.map((benefit, idx) => (
-                            <div key={idx} className="flex items-center text-xs text-muted-foreground">
-                              <div className="w-1 h-1 bg-primary rounded-full mr-2" />
-                              {benefit}
-                            </div>
-                          ))}
-                        </div>
-                        
-                        <Button variant="outline" size="sm" className="w-full">
-                          Get Started
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
+            {/* "Or choose your role to sign up" */}
+            <div className="text-center">
+              <p className="text-muted-foreground">Or choose your role to sign up</p>
             </div>
 
-            <div className="text-center space-y-4">
+            {/* Role Selection Grid */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {roles.map((role) => {
+                const Icon = role.icon;
+                
+                return (
+                  <Card
+                    key={role.id}
+                    className="cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-105 bg-card border border-border"
+                    onClick={() => handleRoleSelect(role.id)}
+                  >
+                    <CardContent className="p-6 text-center">
+                      {/* Icon */}
+                      <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <Icon className="h-8 w-8 text-primary" />
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className="text-xl font-semibold mb-2">{role.title}</h3>
+                      
+                      {/* Description */}
+                      <p className="text-sm text-muted-foreground mb-4">{role.description}</p>
+                      
+                      {/* Features */}
+                      <div className="space-y-2 mb-6">
+                        {role.subtext.split('\n').map((feature, idx) => (
+                          <div key={idx} className="flex items-center text-xs text-muted-foreground">
+                            <div className="w-1.5 h-1.5 bg-primary rounded-full mr-2 flex-shrink-0" />
+                            {feature}
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Get Started Button */}
+                      <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                        Get Started
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            <div className="text-center space-y-4 pt-8">
               <div className="text-muted-foreground">
                 Already have an account?{' '}
                 <Link to="/signin" className="text-primary hover:underline font-medium">
