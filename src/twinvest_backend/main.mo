@@ -71,22 +71,21 @@ actor Twinvest {
 
   private var nextProjectId: Nat = 1;
 
-  // REGISTER USER
-  public func register(id: Text, username: Text, role: Role, btcAddress: Text): async Text {
-    if (users.get(id) != null) {
-      return "User already exists.";
-    };
-    let user: User = {
-      id = id;
-      username = username;
-      role = role;
-      btcAddress = btcAddress;
-      joined = Time.now();
-    };
-    users.put(id, user);
-    return "Registered successfully.";
+ // REGISTER USER
+public func register(id: Text, username: Text, role: Role, btcAddress: Text): async Text {
+  if (users.get(id) != null) {
+    return "User already exists.";
   };
-
+  let user: User = {
+    id = id;
+    username = username;
+    role = role;
+    btcAddress = btcAddress;
+    joined = Time.now();
+  };
+  users.put(id, user);
+  return "Registered successfully.";
+};
   // LOGIN SIMULATION
   public query func login(id: Text): async ?User {
     users.get(id)

@@ -1,11 +1,10 @@
+// src/components/login/InvestorLogin.jsx
 import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Wallet,
   Shield,
@@ -14,16 +13,16 @@ import {
   AlertCircle,
   Building2,
   ArrowLeft,
-  TrendingUp,
   Loader2,
   Eye,
   EyeOff,
   CheckCircle,
-  BarChart3
 } from "lucide-react";
-import { loginWithII, roleVariant, getRoleKey } from "@/lib/icp";
+import { useNavigate } from 'react-router-dom';
+import { loginWithII, loginWithPlug, roleVariant, getRoleKey } from "@/lib/icp";
 
 export default function InvestorLogin() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("example@gmail.com");
   const [password, setPassword] = useState("••••••••");
   const [showPassword, setShowPassword] = useState(false);
@@ -37,8 +36,11 @@ export default function InvestorLogin() {
     setIsLoading(true);
     setConnectionType("wallet");
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      alert("Wallet Connected Successfully! Redirecting to dashboard...");
+      const { actor } = await loginWithPlug();
+      const roleOpt = await actor.get_my_role();
+      let roleKey = roleOpt && roleOpt.length ? getRoleKey(roleOpt[0]) : null;
+      if (!roleKey) { await actor.set_my_role(roleVariant('investor')); roleKey = 'investor'; }
+      navigate(`/dashboard/${roleKey}`);
     } catch (error) {
       alert("Connection Failed: Unable to connect wallet. Please try again.");
     } finally {
@@ -60,7 +62,7 @@ export default function InvestorLogin() {
         setShow2FA(true);
         alert("Credentials Verified: Please complete two-factor authentication.");
       }
-    } catch (error) {
+    } catch {
       alert("Login Failed: Invalid credentials. Please try again.");
     } finally {
       setIsLoading(false);
@@ -79,9 +81,8 @@ export default function InvestorLogin() {
         await actor.set_my_role(roleVariant("investor"));
         roleKey = "investor";
       }
-      alert("ICP Identity Connected Successfully! Redirecting to dashboard...");
-      // Optional: navigate(`/dashboard/${roleKey}`);
-    } catch (error) {
+      navigate(`/dashboard/${roleKey}`);
+    } catch {
       alert("ICP Connection Failed: Unable to connect with Internet Identity.");
     } finally {
       setIsLoading(false);
@@ -95,7 +96,7 @@ export default function InvestorLogin() {
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
       alert("SSO Authentication: Redirecting to institutional login portal...");
-    } catch (error) {
+    } catch {
       alert("SSO Failed: Unable to connect to institutional SSO.");
     } finally {
       setIsLoading(false);
@@ -111,8 +112,8 @@ export default function InvestorLogin() {
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
-      alert("Authentication Successful: Welcome to your investor dashboard!");
-    } catch (error) {
+      navigate('/dashboard/investor');
+    } catch {
       alert("Authentication Failed: Invalid authentication code. Please try again.");
     } finally {
       setIsLoading(false);
@@ -317,17 +318,8 @@ export default function InvestorLogin() {
                       variant="outline"
                       className="w-full h-11 border-slate-700 bg-slate-800/30 hover:bg-slate-700/30 text-gray-300 hover:text-white hover:border-slate-600 rounded-md"
                     >
-                      {isLoading && connectionType === "sso" ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Connecting...
-                        </>
-                      ) : (
-                        <>
-                          <Building2 className="h-4 w-4 mr-2" />
-                          Institutional SSO
-                        </>
-                      )}
+                      <Building2 className="h-4 w-4 mr-2" />
+                      Institutional SSO
                     </Button>
                   </div>
                 </>

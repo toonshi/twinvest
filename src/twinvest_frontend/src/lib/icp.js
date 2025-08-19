@@ -1,12 +1,17 @@
 // src/lib/icp.js
 import { AuthClient } from '@dfinity/auth-client';
 import { Actor, HttpAgent } from '@dfinity/agent';
-
-// Adjust path to match: twinvest/src/declarations/role_registry
 import { idlFactory, canisterId as roleRegistryCanisterId } from '../../../declarations/role_registry';
 
 const isDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 const IC_HOST = isDev ? 'http://127.0.0.1:4943' : 'https://icp0.io';
+
+async function createAgentAndActor(identity) {
+  const agent = new HttpAgent({ identity, host: IC_HOST });
+  if (isDev) { try { await agent.fetchRootKey(); } catch {} }
+  const actor = Actor.createActor(idlFactory, { agent, canisterId: roleRegistryCanisterId });
+  return { agent, actor };
+}
 
 export async function loginWithII() {
   const authClient = await AuthClient.create({
@@ -18,7 +23,6 @@ export async function loginWithII() {
       identityProvider: isDev
         ? `http://127.0.0.1:4943/?canisterId=${import.meta.env.VITE_II_CANISTER_ID || 'rdmx6-jaaaa-aaaah-qdrva-cai'}`
         : 'https://identity.ic0.app',
-      // 7 days
       maxTimeToLive: 7n * 24n * 60n * 60n * 1_000_000_000n,
       onSuccess: resolve,
       onError: reject,
@@ -26,13 +30,35 @@ export async function loginWithII() {
   });
 
   const identity = authClient.getIdentity();
-  const agent = new HttpAgent({ identity, host: IC_HOST });
-  if (isDev) {
-    try { await agent.fetchRootKey(); } catch {}
-  }
-
-  const actor = Actor.createActor(idlFactory, { agent, canisterId: roleRegistryCanisterId });
+  const { agent, actor } = await createAgentAndActor(identity);
   return { authClient, identity, agent, actor };
+}
+
+export async function loginWithNFID() {
+  const authClient = await AuthClient.create({
+    idleOptions: { disableIdle: true, disableDefaultIdleCallback: true },
+  });
+
+  await new Promise((resolve, reject) => {
+    authClient.login({
+      identityProvider: 'https://nfid.one/authenticate?applicationName=Twinvest',
+      maxTimeToLive: 7n * 24n * 60n * 60n * 1_000_000_000n,
+      onSuccess: resolve,
+      onError: reject,
+    });
+  });
+
+  const identity = authClient.getIdentity();
+  const { agent, actor } = await createAgentAndActor(identity);
+  return { authClient, identity, agent, actor };
+}
+
+export async function loginWithPlug() {
+  if (!window.ic?.plug) throw new Error('Plug wallet not detected');
+  await window.ic.plug.requestConnect({ whitelist: [roleRegistryCanisterId], host: IC_HOST });
+  await window.ic.plug.createAgent({ whitelist: [roleRegistryCanisterId], host: IC_HOST });
+  const actor = await window.ic.plug.createActor({ canisterId: roleRegistryCanisterId, interfaceFactory: idlFactory });
+  return { actor };
 }
 
 export async function checkAuthentication() {
