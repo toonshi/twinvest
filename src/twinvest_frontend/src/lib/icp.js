@@ -20,9 +20,10 @@ export async function loginWithII() {
 
   await new Promise((resolve, reject) => {
     authClient.login({
+      // Updated to use Internet Identity 2.0 URL as per documentation
       identityProvider: isDev
         ? `http://127.0.0.1:4943/?canisterId=${import.meta.env.VITE_II_CANISTER_ID || 'rdmx6-jaaaa-aaaah-qdrva-cai'}`
-        : 'https://identity.ic0.app',
+        : 'https://id.ai/',
       maxTimeToLive: 7n * 24n * 60n * 60n * 1_000_000_000n,
       onSuccess: resolve,
       onError: reject,
