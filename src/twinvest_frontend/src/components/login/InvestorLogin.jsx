@@ -20,11 +20,13 @@ import {
 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { loginWithII, loginWithPlug, roleVariant, getRoleKey } from "@/lib/icp";
+import { saveUserSession } from "@/lib/auth";
+import { toast } from "@/components/ui/use-toast";
 
 export default function InvestorLogin() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("example@gmail.com");
-  const [password, setPassword] = useState("••••••••");
+  const [email, setEmail] = useState("investor@twinvest.com");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [show2FA, setShow2FA] = useState(false);
@@ -38,32 +40,40 @@ export default function InvestorLogin() {
     try {
       const { actor } = await loginWithPlug();
       const roleOpt = await actor.get_my_role();
-      let roleKey = roleOpt && roleOpt.length ? getRoleKey(roleOpt[0]) : null;
-      if (!roleKey) { await actor.set_my_role(roleVariant('investor')); roleKey = 'investor'; }
-      navigate(`/dashboard/${roleKey}`);
-    } catch (error) {
-      alert("Connection Failed: Unable to connect wallet. Please try again.");
-    } finally {
-      setIsLoading(false);
-      setConnectionType(null);
-    }
-  };
-
-  const handleEmailLogin = async () => {
-    if (!email || !password) {
-      alert("Missing Information: Please enter both email and password.");
-      return;
-    }
-    setIsLoading(true);
-    setConnectionType("email");
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      if (email && password) {
-        setShow2FA(true);
-        alert("Credentials Verified: Please complete two-factor authentication.");
+      
+      let roleKey = 'investor'; // Default to investor for this login page
+      
+      // Check if user already has a role set
+      if (roleOpt && roleOpt.length > 0) {
+        roleKey = getRoleKey(roleOpt[0]);
+      } else {
+        // Set investor role for new users
+        await actor.set_my_role(roleVariant('investor'));
       }
-    } catch {
-      alert("Login Failed: Invalid credentials. Please try again.");
+      
+      // Save session and navigate
+      const userData = {
+        id: 'plug_user',
+        authType: 'wallet',
+        role: roleKey,
+        name: 'Plug Wallet User'
+      };
+      
+      saveUserSession(userData, roleKey);
+      
+      toast({
+        title: "Success!",
+        description: "Connected with Plug Wallet successfully.",
+      });
+      
+      navigate('/dashboard/investor');
+    } catch (error) {
+      console.error('Plug connection error:', error);
+      toast({
+        title: "Connection Failed",
+        description: "Unable to connect with Plug Wallet. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
       setConnectionType(null);
@@ -76,14 +86,81 @@ export default function InvestorLogin() {
     try {
       const { actor } = await loginWithII();
       const roleOpt = await actor.get_my_role();
-      let roleKey = roleOpt && roleOpt.length ? getRoleKey(roleOpt[0]) : null;
-      if (!roleKey) {
-        await actor.set_my_role(roleVariant("investor"));
-        roleKey = "investor";
+      
+      let roleKey = 'investor'; // Default to investor for this login page
+      
+      // Check if user already has a role set
+      if (roleOpt && roleOpt.length > 0) {
+        roleKey = getRoleKey(roleOpt[0]);
+        // If user has a different role but is on investor login, respect their choice to access investor dashboard
+        if (roleKey !== 'investor') {
+          console.log(`User has role ${roleKey} but accessing investor login`);
+        }
+      } else {
+        // Set investor role for new users
+        await actor.set_my_role(roleVariant('investor'));
       }
-      navigate(`/dashboard/${roleKey}`);
-    } catch {
-      alert("ICP Connection Failed: Unable to connect with Internet Identity.");
+      
+      // Save session data
+      const userData = {
+        id: 'icp_user',
+        authType: 'icp',
+        role: 'investor', // Always set to investor since they're using investor login
+        name: 'Internet Identity User'
+      };
+      
+      saveUserSession(userData, 'investor');
+      
+      toast({
+        title: "Welcome!",
+        description: "Successfully signed in with Internet Identity.",
+      });
+      
+      // Always navigate to investor dashboard from investor login
+      navigate('/dashboard/investor');
+      
+    } catch (error) {
+      console.error('ICP authentication error:', error);
+      toast({
+        title: "Authentication Failed",
+        description: "Unable to connect with Internet Identity. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+      setConnectionType(null);
+    }
+  };
+
+  const handleEmailLogin = async () => {
+    if (!email || !password) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both email and password.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsLoading(true);
+    setConnectionType("email");
+    try {
+      // Simulate email authentication
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      if (email && password) {
+        setShow2FA(true);
+        toast({
+          title: "Credentials Verified",
+          description: "Please complete two-factor authentication.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: "Invalid credentials. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
       setConnectionType(null);
@@ -95,9 +172,30 @@ export default function InvestorLogin() {
     setConnectionType("sso");
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      alert("SSO Authentication: Redirecting to institutional login portal...");
-    } catch {
-      alert("SSO Failed: Unable to connect to institutional SSO.");
+      
+      // Simulate successful SSO
+      const userData = {
+        id: 'sso_user',
+        authType: 'sso',
+        role: 'investor',
+        name: 'Institutional User'
+      };
+      
+      saveUserSession(userData, 'investor');
+      
+      toast({
+        title: "SSO Success",
+        description: "Successfully authenticated via institutional SSO.",
+      });
+      
+      navigate('/dashboard/investor');
+      
+    } catch (error) {
+      toast({
+        title: "SSO Failed",
+        description: "Unable to connect to institutional SSO.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
       setConnectionType(null);
@@ -106,31 +204,58 @@ export default function InvestorLogin() {
 
   const handle2FASubmit = async () => {
     if (!twoFactorCode || twoFactorCode.length !== 6) {
-      alert("Invalid Code: Please enter a valid 6-digit authentication code.");
+      toast({
+        title: "Invalid Code",
+        description: "Please enter a valid 6-digit authentication code.",
+        variant: "destructive"
+      });
       return;
     }
+    
     setIsLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Save session after 2FA verification
+      const userData = {
+        id: 'email_user',
+        email: email,
+        authType: 'email',
+        role: 'investor',
+        name: email.split('@')[0]
+      };
+      
+      saveUserSession(userData, 'investor');
+      
+      toast({
+        title: "Welcome!",
+        description: "Successfully signed in to your investor account.",
+      });
+      
       navigate('/dashboard/investor');
-    } catch {
-      alert("Authentication Failed: Invalid authentication code. Please try again.");
+      
+    } catch (error) {
+      toast({
+        title: "Authentication Failed",
+        description: "Invalid authentication code. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleBackToRoles = () => {
-    window.history.back();
-    alert("Going back to role selection...");
+    navigate('/');
   };
 
   const handleCreateAccount = () => {
-    alert("Navigating to investor sign up...");
+    navigate('/signup?role=investor');
   };
 
   return (
     <div className="min-h-screen bg-slate-950 flex">
+      {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-950">
         <div className="absolute right-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-slate-700 to-transparent"></div>
         <div className="flex flex-col justify-center items-center p-8 relative z-10 w-full">
@@ -155,6 +280,7 @@ export default function InvestorLogin() {
         </div>
       </div>
 
+      {/* Right side - Login Form */}
       <div className="w-full lg:w-1/2 flex flex-col bg-slate-950">
         <div className="p-6 flex justify-between items-center">
           <Button
@@ -164,18 +290,19 @@ export default function InvestorLogin() {
             onClick={handleBackToRoles}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to role selection
+            Back to home
           </Button>
         </div>
 
         <div className="flex-1 flex items-center justify-center px-6 pb-6">
           <div className="w-full max-w-md">
-            <div className="text-right mb-8">
+            <div className="text-center mb-8">
               <h2 className="text-2xl font-semibold text-white mb-2">Investor Portal</h2>
               <p className="text-sm text-gray-400">Access your investment dashboard and portfolio</p>
             </div>
 
             <div className="bg-slate-900/60 backdrop-blur-sm border border-slate-800 rounded-lg p-6 space-y-6">
+              {/* KYC Status */}
               <div className="flex items-center justify-between p-3 rounded-md bg-slate-800/50">
                 <div className="flex items-center space-x-2">
                   <Shield className="h-4 w-4 text-purple-400" />
@@ -188,29 +315,11 @@ export default function InvestorLogin() {
 
               {!show2FA ? (
                 <>
-                  <Button
-                    onClick={handleWalletConnect}
-                    disabled={isLoading}
-                    className="w-full h-11 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md transition-all duration-200"
-                  >
-                    {isLoading && connectionType === "wallet" ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Connecting Wallet...
-                      </>
-                    ) : (
-                      <>
-                        <Wallet className="h-4 w-4 mr-2" />
-                        Connect Wallet
-                      </>
-                    )}
-                  </Button>
-
+                  {/* ICP Identity Login */}
                   <Button
                     onClick={handleICPLogin}
                     disabled={isLoading}
-                    variant="outline"
-                    className="w-full h-11 border-slate-700 bg-slate-800/30 hover:bg-slate-700/50 text-white hover:border-slate-600 rounded-md"
+                    className="w-full h-11 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md transition-all duration-200"
                   >
                     {isLoading && connectionType === "icp" ? (
                       <>
@@ -220,7 +329,27 @@ export default function InvestorLogin() {
                     ) : (
                       <>
                         <Shield className="h-4 w-4 mr-2" />
-                        Continue with ICP Identity
+                        Continue with Internet Identity
+                      </>
+                    )}
+                  </Button>
+
+                  {/* Wallet Connect */}
+                  <Button
+                    onClick={handleWalletConnect}
+                    disabled={isLoading}
+                    variant="outline"
+                    className="w-full h-11 border-slate-700 bg-slate-800/30 hover:bg-slate-700/50 text-white hover:border-slate-600 rounded-md"
+                  >
+                    {isLoading && connectionType === "wallet" ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Connecting Wallet...
+                      </>
+                    ) : (
+                      <>
+                        <Wallet className="h-4 w-4 mr-2" />
+                        Connect with Plug Wallet
                       </>
                     )}
                   </Button>
@@ -234,6 +363,7 @@ export default function InvestorLogin() {
                     </div>
                   </div>
 
+                  {/* Email Login Form */}
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-sm text-gray-300 font-medium">
@@ -248,6 +378,7 @@ export default function InvestorLogin() {
                           onChange={(e) => setEmail(e.target.value)}
                           className="pl-10 h-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md"
                           disabled={isLoading}
+                          placeholder="Enter your email"
                         />
                       </div>
                     </div>
@@ -265,6 +396,7 @@ export default function InvestorLogin() {
                           onChange={(e) => setPassword(e.target.value)}
                           className="pl-10 pr-10 h-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md"
                           disabled={isLoading}
+                          placeholder="Enter your password"
                         />
                         <Button
                           type="button"
@@ -311,6 +443,7 @@ export default function InvestorLogin() {
                     </Button>
                   </div>
 
+                  {/* Institutional SSO */}
                   <div className="pt-4 border-t border-slate-800">
                     <Button
                       onClick={handleInstitutionalSSO}
@@ -318,12 +451,22 @@ export default function InvestorLogin() {
                       variant="outline"
                       className="w-full h-11 border-slate-700 bg-slate-800/30 hover:bg-slate-700/30 text-gray-300 hover:text-white hover:border-slate-600 rounded-md"
                     >
-                      <Building2 className="h-4 w-4 mr-2" />
-                      Institutional SSO
+                      {isLoading && connectionType === "sso" ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Connecting...
+                        </>
+                      ) : (
+                        <>
+                          <Building2 className="h-4 w-4 mr-2" />
+                          Institutional SSO
+                        </>
+                      )}
                     </Button>
                   </div>
                 </>
               ) : (
+                /* 2FA Section */
                 <div className="space-y-6">
                   <div className="text-center space-y-3">
                     <AlertCircle className="h-10 w-10 text-purple-400 mx-auto" />
@@ -342,7 +485,7 @@ export default function InvestorLogin() {
                       type="text"
                       placeholder="000000"
                       value={twoFactorCode}
-                      onChange={(e) => setTwoFactorCode(e.target.value)}
+                      onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       className="text-center text-xl tracking-widest h-12 bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md"
                       maxLength={6}
                       disabled={isLoading}
@@ -370,7 +513,7 @@ export default function InvestorLogin() {
 
                     <Button
                       variant="outline"
-                      onClick={() => setShow2FA(false)}
+                      onClick={() => { setShow2FA(false); setTwoFactorCode(""); }}
                       className="w-full h-11 border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-white hover:border-slate-600 rounded-md"
                       disabled={isLoading}
                     >
@@ -380,6 +523,7 @@ export default function InvestorLogin() {
                 </div>
               )}
 
+              {/* Sign Up Link */}
               <div className="text-center pt-4 border-t border-slate-800">
                 <p className="text-sm text-gray-400">
                   New to Twinvest?{" "}
@@ -394,6 +538,7 @@ export default function InvestorLogin() {
               </div>
             </div>
 
+            {/* Footer Links */}
             <div className="mt-6 text-center">
               <div className="flex justify-center space-x-6 text-sm text-gray-500">
                 <a href="#" className="hover:text-purple-400 transition-colors">Privacy</a>
