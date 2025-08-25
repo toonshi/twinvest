@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,11 +24,49 @@ import {
   Zap,
   DollarSign,
   Smartphone,
-  Users
+  Users,
+  Fingerprint,
+  Globe
 } from "lucide-react";
+// Mock Internet Identity hook and service for demonstration
+const useInternetIdentity = () => {
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [principal, setPrincipal] = React.useState(null);
+  const [isLoading, setIsLoading] = React.useState(false);
 
-export default function SMEPortal() {
-  const [activeTab, setActiveTab] = useState("email");
+  const login = async () => {
+    setIsLoading(true);
+    // Simulate Internet Identity login
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsAuthenticated(true);
+    setPrincipal("rdmx6-jaaaa-aaaaa-aaadq-cai-example-principal-id");
+    setIsLoading(false);
+    return true;
+  };
+
+  const logout = async () => {
+    setIsAuthenticated(false);
+    setPrincipal(null);
+  };
+
+  return { isAuthenticated, principal, isLoading, login, logout };
+};
+
+const roleService = {
+  getMyRole: async () => {
+    // Simulate role check
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return { SME: null }; // Mock SME role
+  },
+  setMyRole: async (role) => {
+    // Simulate setting role
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return true;
+  }
+};
+
+export default function SMEPortalWithII() {
+  const [activeTab, setActiveTab] = useState("ii");
   const [email, setEmail] = useState("fabbydebby@gmail.com");
   const [password, setPassword] = useState("••••••••");
   const [phone, setPhone] = useState("");
@@ -38,6 +76,70 @@ export default function SMEPortal() {
   const [showOTP, setShowOTP] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [connectionType, setConnectionType] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+
+  const { 
+    isAuthenticated, 
+    principal, 
+    isLoading: iiLoading, 
+    login: iiLogin, 
+    logout: iiLogout 
+  } = useInternetIdentity();
+
+  useEffect(() => {
+    if (isAuthenticated && principal) {
+      checkUserRole();
+    }
+  }, [isAuthenticated, principal]);
+
+  const checkUserRole = async () => {
+    try {
+      const role = await roleService.getMyRole();
+      setUserRole(role);
+      
+      if (!role) {
+        // Auto-set role as SME for new users
+        const success = await roleService.setMyRole({ SME: null });
+        if (success) {
+          setUserRole({ SME: null });
+          alert("Welcome! Your account has been set up as an SME.");
+        }
+      } else if (role.SME) {
+        alert("Internet Identity Login Successful: Welcome to your SME dashboard!");
+      } else {
+        alert("Access Denied: This portal is for SME users only.");
+      }
+    } catch (error) {
+      console.error("Role check error:", error);
+      alert("Error checking user role. Please try again.");
+    }
+  };
+
+  const handleInternetIdentityLogin = async () => {
+    setIsLoading(true);
+    setConnectionType("ii");
+    
+    try {
+      const success = await iiLogin();
+      if (success) {
+        // Role check will happen in useEffect
+      } else {
+        alert("Internet Identity Login Failed: Please try again.");
+      }
+    } catch (error) {
+      console.error("II Login error:", error);
+      alert("Internet Identity Login Failed: " + error.message);
+    } finally {
+      setIsLoading(false);
+      setConnectionType(null);
+    }
+  };
+
+  const handleLogout = async () => {
+    await iiLogout();
+    setUserRole(null);
+    alert("Logged out successfully!");
+  };
 
   const handleEmailLogin = async () => {
     if (!email || !password) {
@@ -120,11 +222,47 @@ export default function SMEPortal() {
     alert("Navigating to SME account creation...");
   };
 
+  // If already authenticated with II, show dashboard access
+  if (isAuthenticated && userRole?.SME) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
+        <Card className="w-full max-w-md bg-slate-900/60 backdrop-blur-sm border border-slate-800">
+          <CardContent className="p-6 space-y-6 text-center">
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+                <CheckCircle className="h-8 w-8 text-green-400" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-white mb-2">Successfully Authenticated</h2>
+                <p className="text-sm text-gray-400">Internet Identity Principal:</p>
+                <div className="bg-slate-800 rounded-lg p-3 mt-2">
+                  <code className="text-xs text-green-400 break-all">{principal}</code>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Button className="w-full h-11 bg-purple-600 hover:bg-purple-700 text-white">
+                Access SME Dashboard
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handleLogout}
+                className="w-full h-11 border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-white"
+              >
+                Logout
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 flex">
       {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-950">
-        {/* Subtle vertical separator line */}
         <div className="absolute right-0 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-slate-700 to-transparent"></div>
         
         <div className="flex flex-col justify-center items-center p-8 relative z-10 w-full">
@@ -136,7 +274,6 @@ export default function SMEPortal() {
               Revolutionizing invoice financing through blockchain technology
             </p>
             
-            {/* Investment Statistics */}
             <div className="grid grid-cols-2 gap-12">
               <div className="text-center space-y-2">
                 <div className="text-2xl font-bold text-blue-400">$2.4B+</div>
@@ -153,7 +290,6 @@ export default function SMEPortal() {
 
       {/* Right Side - Login Form */}
       <div className="w-full lg:w-1/2 flex flex-col bg-slate-950">
-        {/* Top Navigation */}
         <div className="p-6 flex justify-between items-center">
           <Button
             variant="ghost"
@@ -166,10 +302,8 @@ export default function SMEPortal() {
           </Button>
         </div>
 
-        {/* Main Content */}
         <div className="flex-1 flex items-center justify-center px-6 pb-6">
           <div className="w-full max-w-md">
-            {/* Form Header */}
             <div className="text-right mb-8">
               <h2 className="text-2xl font-semibold text-white mb-2">SME Portal</h2>
               <p className="text-sm text-gray-400">Upload invoices, tokenize, and get funded instantly</p>
@@ -198,29 +332,82 @@ export default function SMEPortal() {
                 </div>
               </div>
 
+              {/* Internet Identity - Primary Option */}
+              <div className="space-y-4">
+                <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <Globe className="h-5 w-5 text-blue-400" />
+                    <div>
+                      <h3 className="text-sm font-semibold text-white">Internet Identity</h3>
+                      <p className="text-xs text-gray-400">Secure, decentralized authentication</p>
+                    </div>
+                    <Badge variant="secondary" className="bg-blue-500/20 text-blue-300 text-xs">
+                      Recommended
+                    </Badge>
+                  </div>
+                  <Button
+                    onClick={handleInternetIdentityLogin}
+                    disabled={isLoading || iiLoading}
+                    className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium"
+                  >
+                    {(isLoading && connectionType === "ii") || iiLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : (
+                      <>
+                        <Fingerprint className="h-4 w-4 mr-2" />
+                        Sign in with Internet Identity
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
               {/* Tab Navigation */}
-              <div className="grid grid-cols-2 bg-slate-800/50 p-1 rounded-lg">
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-700"></div>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-slate-900 px-4 text-gray-500 tracking-wider font-medium">OTHER OPTIONS</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 bg-slate-800/50 p-1 rounded-lg text-xs">
                 <button
                   onClick={() => setActiveTab("email")}
-                  className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+                  className={`flex items-center justify-center space-x-1 py-2 px-2 rounded-md font-medium transition-all ${
                     activeTab === "email"
                       ? "bg-slate-700 text-white"
                       : "text-gray-400 hover:text-gray-300"
                   }`}
                 >
-                  <Mail className="h-4 w-4" />
+                  <Mail className="h-3 w-3" />
                   <span>Email</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("phone")}
-                  className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-md text-sm font-medium transition-all ${
+                  className={`flex items-center justify-center space-x-1 py-2 px-2 rounded-md font-medium transition-all ${
                     activeTab === "phone"
                       ? "bg-slate-700 text-white"
                       : "text-gray-400 hover:text-gray-300"
                   }`}
                 >
-                  <Smartphone className="h-4 w-4" />
-                  <span>Phone OTP</span>
+                  <Smartphone className="h-3 w-3" />
+                  <span>Phone</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("wallet")}
+                  className={`flex items-center justify-center space-x-1 py-2 px-2 rounded-md font-medium transition-all ${
+                    activeTab === "wallet"
+                      ? "bg-slate-700 text-white"
+                      : "text-gray-400 hover:text-gray-300"
+                  }`}
+                >
+                  <Wallet className="h-3 w-3" />
+                  <span>Wallet</span>
                 </button>
               </div>
 
@@ -270,23 +457,6 @@ export default function SMEPortal() {
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
-                  </div>
-
-                  <div className="flex items-center justify-between py-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="remember"
-                        checked={rememberMe}
-                        onCheckedChange={(checked) => setRememberMe(!!checked)}
-                        className="border-slate-600 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600 h-4 w-4"
-                      />
-                      <Label htmlFor="remember" className="text-sm text-gray-400">
-                        Remember me
-                      </Label>
-                    </div>
-                    <Button variant="link" className="text-sm text-purple-400 p-0 h-auto hover:text-purple-300 font-medium">
-                      Forgot password?
-                    </Button>
                   </div>
 
                   <Button
@@ -355,9 +525,6 @@ export default function SMEPortal() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="otp" className="text-sm text-gray-300 font-medium">
-                          Verification Code
-                        </Label>
                         <Input
                           id="otp"
                           type="text"
@@ -370,65 +537,47 @@ export default function SMEPortal() {
                         />
                       </div>
 
-                      <div className="space-y-3">
-                        <Button
-                          onClick={handleVerifyOTP}
-                          disabled={otp.length !== 6 || isLoading}
-                          className="w-full h-11 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium"
-                        >
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Verifying...
-                            </>
-                          ) : (
-                            "Verify & Sign In"
-                          )}
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          onClick={() => setShowOTP(false)}
-                          className="w-full h-11 border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-white hover:border-slate-600 rounded-md"
-                          disabled={isLoading}
-                        >
-                          Change phone number
-                        </Button>
-                      </div>
+                      <Button
+                        onClick={handleVerifyOTP}
+                        disabled={otp.length !== 6 || isLoading}
+                        className="w-full h-11 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium"
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Verifying...
+                          </>
+                        ) : (
+                          "Verify & Sign In"
+                        )}
+                      </Button>
                     </>
                   )}
                 </div>
               )}
 
-              {/* Separator */}
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-700"></div>
+              {/* Wallet Tab */}
+              {activeTab === "wallet" && (
+                <div className="space-y-4">
+                  <Button
+                    onClick={handleWalletConnect}
+                    className="w-full h-11 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium"
+                    disabled={isLoading}
+                  >
+                    {isLoading && connectionType === "wallet" ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : (
+                      <>
+                        <Wallet className="h-4 w-4 mr-2" />
+                        Connect Crypto Wallet
+                      </>
+                    )}
+                  </Button>
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-slate-900 px-4 text-gray-500 tracking-wider font-medium">OR CONNECT WALLET</span>
-                </div>
-              </div>
-
-              {/* Connect Wallet */}
-              <Button
-                onClick={handleWalletConnect}
-                variant="outline"
-                className="w-full h-11 border-slate-700 bg-slate-800/30 hover:bg-slate-700/30 text-white hover:border-slate-600 rounded-md"
-                disabled={isLoading}
-              >
-                {isLoading && connectionType === "wallet" ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Connecting...
-                  </>
-                ) : (
-                  <>
-                    <Wallet className="h-4 w-4 mr-2" />
-                    Connect Crypto Wallet
-                  </>
-                )}
-              </Button>
+              )}
 
               {/* Sign Up CTA */}
               <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-4 rounded-lg text-center space-y-3">

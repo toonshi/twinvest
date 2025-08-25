@@ -1,11 +1,4 @@
 import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Wallet,
   Shield,
@@ -26,7 +19,8 @@ import {
   Smartphone,
   Users,
   CreditCard,
-  Key
+  Key,
+  Globe
 } from "lucide-react";
 
 export default function ClientPortal() {
@@ -48,6 +42,21 @@ export default function ClientPortal() {
       alert("Enterprise SSO: Successfully authenticated via SSO portal!");
     } catch (error) {
       alert("SSO Failed: Unable to connect to enterprise SSO.");
+    } finally {
+      setIsLoading(false);
+      setConnectionType(null);
+    }
+  };
+
+  const handleInternetIdentity = async () => {
+    setIsLoading(true);
+    setConnectionType("ii");
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      alert("Internet Identity: Successfully authenticated with blockchain identity! Redirecting to client portal...");
+    } catch (error) {
+      alert("Internet Identity Failed: Unable to connect to Internet Identity service.");
     } finally {
       setIsLoading(false);
       setConnectionType(null);
@@ -148,15 +157,13 @@ export default function ClientPortal() {
       <div className="w-full lg:w-1/2 flex flex-col bg-slate-950">
         {/* Top Navigation */}
         <div className="p-6 flex justify-between items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-white hover:bg-slate-800 text-sm"
+          <button
             onClick={handleBackToRoles}
+            className="flex items-center text-gray-400 hover:text-white hover:bg-slate-800 text-sm px-3 py-2 rounded-md"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to role selection
-          </Button>
+          </button>
         </div>
 
         {/* Main Content */}
@@ -191,11 +198,29 @@ export default function ClientPortal() {
                 </div>
               </div>
 
-              {/* Enterprise SSO Login */}
-              <Button
+              {/* Internet Identity & Enterprise SSO Login */}
+              <button
+                onClick={handleInternetIdentity}
+                disabled={isLoading}
+                className="w-full h-11 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {isLoading && connectionType === "ii" ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Connecting to Internet Identity...
+                  </>
+                ) : (
+                  <>
+                    <Globe className="h-4 w-4 mr-2" />
+                    Internet Identity (Blockchain Auth)
+                  </>
+                )}
+              </button>
+
+              <button
                 onClick={handleEnterpriseSSO}
                 disabled={isLoading}
-                className="w-full h-11 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md"
+                className="w-full h-11 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {isLoading && connectionType === "sso" ? (
                   <>
@@ -208,15 +233,14 @@ export default function ClientPortal() {
                     Enterprise SSO Login
                   </>
                 )}
-              </Button>
+              </button>
 
               {/* SSO Provider Buttons */}
               <div className="grid grid-cols-2 gap-3">
-                <Button
+                <button
                   onClick={handleOkta}
                   disabled={isLoading}
-                  variant="outline"
-                  className="h-11 border-slate-700 bg-slate-800/30 hover:bg-slate-700/50 text-white hover:border-slate-600 rounded-md text-sm"
+                  className="h-11 border border-slate-700 bg-slate-800/30 hover:bg-slate-700/50 text-white hover:border-slate-600 rounded-md text-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading && connectionType === "okta" ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -226,12 +250,11 @@ export default function ClientPortal() {
                       Okta
                     </>
                   )}
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={handleAzureAD}
                   disabled={isLoading}
-                  variant="outline"
-                  className="h-11 border-slate-700 bg-slate-800/30 hover:bg-slate-700/50 text-white hover:border-slate-600 rounded-md text-sm"
+                  className="h-11 border border-slate-700 bg-slate-800/30 hover:bg-slate-700/50 text-white hover:border-slate-600 rounded-md text-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading && connectionType === "azure" ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -241,7 +264,7 @@ export default function ClientPortal() {
                       Azure AD
                     </>
                   )}
-                </Button>
+                </button>
               </div>
 
               {/* Separator */}
@@ -257,83 +280,81 @@ export default function ClientPortal() {
               {/* Company Email Form */}
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="company-email" className="text-sm text-gray-300 font-medium">
+                  <label htmlFor="company-email" className="text-sm text-gray-300 font-medium">
                     Company Email Address
-                  </Label>
+                  </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                    <Input
+                    <input
                       id="company-email"
                       type="email"
                       placeholder="employee@company.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 h-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md"
+                      className="w-full pl-10 h-11 bg-slate-800/50 border border-slate-700 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md outline-none"
                       disabled={isLoading}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm text-gray-300 font-medium">
+                  <label htmlFor="password" className="text-sm text-gray-300 font-medium">
                     Password
-                  </Label>
+                  </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                    <Input
+                    <input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10 h-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md"
+                      className="w-full pl-10 pr-10 h-11 bg-slate-800/50 border border-slate-700 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md outline-none"
                       disabled={isLoading}
                     />
-                    <Button
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-7 w-7 hover:bg-slate-700 text-gray-500 hover:text-white rounded"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-7 w-7 hover:bg-slate-700 text-gray-500 hover:text-white rounded flex items-center justify-center"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
+                    </button>
                   </div>
                 </div>
 
                 {/* Company ID and Access Code */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <Label htmlFor="company-id" className="text-sm text-gray-300 font-medium">
+                    <label htmlFor="company-id" className="text-sm text-gray-300 font-medium">
                       Company ID
-                    </Label>
+                    </label>
                     <div className="relative">
                       <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                      <Input
+                      <input
                         id="company-id"
                         type="text"
                         placeholder="COMP123"
                         value={companyId}
                         onChange={(e) => setCompanyId(e.target.value)}
-                        className="pl-10 h-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md text-sm"
+                        className="w-full pl-10 h-11 bg-slate-800/50 border border-slate-700 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md text-sm outline-none"
                         disabled={isLoading}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="access-code" className="text-sm text-gray-300 font-medium">
+                    <label htmlFor="access-code" className="text-sm text-gray-300 font-medium">
                       Access Code
-                    </Label>
+                    </label>
                     <div className="relative">
                       <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                      <Input
+                      <input
                         id="access-code"
                         type="text"
                         placeholder="Optional"
                         value={accessCode}
                         onChange={(e) => setAccessCode(e.target.value)}
-                        className="pl-10 h-11 bg-slate-800/50 border-slate-700 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md text-sm"
+                        className="w-full pl-10 h-11 bg-slate-800/50 border border-slate-700 text-white placeholder:text-gray-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-md text-sm outline-none"
                         disabled={isLoading}
                       />
                     </div>
@@ -343,26 +364,27 @@ export default function ClientPortal() {
                 {/* Remember Me & Forgot Password */}
                 <div className="flex items-center justify-between py-2">
                   <div className="flex items-center space-x-2">
-                    <Checkbox
+                    <input
                       id="remember"
+                      type="checkbox"
                       checked={rememberMe}
-                      onCheckedChange={(checked) => setRememberMe(!!checked)}
-                      className="border-slate-600 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600 h-4 w-4"
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="h-4 w-4 border border-slate-600 rounded bg-slate-800 checked:bg-purple-600 checked:border-purple-600"
                     />
-                    <Label htmlFor="remember" className="text-sm text-gray-400">
+                    <label htmlFor="remember" className="text-sm text-gray-400">
                       Remember me
-                    </Label>
+                    </label>
                   </div>
-                  <Button variant="link" className="text-sm text-purple-400 p-0 h-auto hover:text-purple-300 font-medium">
+                  <button className="text-sm text-purple-400 hover:text-purple-300 font-medium">
                     Forgot password?
-                  </Button>
+                  </button>
                 </div>
 
                 {/* Login Button */}
-                <Button
+                <button
                   onClick={handleEmailLogin}
                   disabled={!email || !password || !companyId || isLoading}
-                  className="w-full h-11 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium"
+                  className="w-full h-11 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   {isLoading && connectionType === "email" ? (
                     <>
@@ -372,7 +394,23 @@ export default function ClientPortal() {
                   ) : (
                     "Access Company Portal"
                   )}
-                </Button>
+                </button>
+              </div>
+
+              {/* Internet Identity Benefits */}
+              <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <Globe className="h-4 w-4 text-purple-400 mt-0.5 flex-shrink-0" />
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-medium text-purple-400">
+                      Internet Identity Benefits
+                    </h4>
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      Skip passwords entirely with blockchain-based authentication. 
+                      Secure, private, and works across all your devices.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               {/* Enterprise Security Notice */}
@@ -394,13 +432,12 @@ export default function ClientPortal() {
               <div className="text-center pt-4 border-t border-slate-800">
                 <p className="text-sm text-gray-400">
                   Need enterprise access?{" "}
-                  <Button
-                    variant="link"
-                    className="text-purple-400 p-0 h-auto text-sm font-medium hover:text-purple-300"
+                  <button
+                    className="text-purple-400 hover:text-purple-300 font-medium"
                     onClick={handleContactAdmin}
                   >
                     Contact your administrator
-                  </Button>
+                  </button>
                 </p>
               </div>
             </div>

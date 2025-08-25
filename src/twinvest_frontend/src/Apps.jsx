@@ -79,7 +79,12 @@ const AppContent = () => {
         <Toaster />
         <Sonner />
         <Routes>
+          {/* Keep LandingPage as home */}
           <Route path="/" element={<LandingPage />} />
+          
+          {/* Role selector for when users click "Get Started" */}
+          <Route path="/get-started" element={<RoleSelector />} />
+          
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/features" element={<FeaturesSection />} />

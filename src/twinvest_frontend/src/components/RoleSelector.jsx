@@ -4,8 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Users, TrendingUp, DollarSign, Shield, Loader2, ArrowLeft } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { loginWithII, roleVariant, getRoleKey } from '../lib/icp';
-import { saveUserSession, getUserSession } from '../lib/auth';
 import { toast } from '@/components/ui/use-toast';
 
 export const RoleSelector = () => {
@@ -20,7 +18,8 @@ export const RoleSelector = () => {
       description: 'Upload invoices, tokenize as NFTs, and access immediate funding', 
       icon: Users, 
       color: 'from-primary/20 to-accent/20 border-primary/30',
-      features: ['Upload & tokenize invoices', 'Instant funding access', 'NFT marketplace']
+      features: ['Upload & tokenize invoices', 'Instant funding access', 'NFT marketplace'],
+      disabled: false // Enable all roles since dashboards exist
     },
     { 
       id: 'investor', 
@@ -28,7 +27,8 @@ export const RoleSelector = () => {
       description: 'Browse and invest in tokenized invoice NFTs for returns', 
       icon: TrendingUp, 
       color: 'from-success/20 to-primary/20 border-success/30',
-      features: ['Diversified portfolio', 'Transparent yields', 'Risk assessment']
+      features: ['Diversified portfolio', 'Transparent yields', 'Risk assessment'],
+      disabled: false // Only investor is enabled
     },
     { 
       id: 'client', 
@@ -36,7 +36,8 @@ export const RoleSelector = () => {
       description: 'Manage and pay outstanding invoices efficiently', 
       icon: DollarSign, 
       color: 'from-accent/20 to-secondary/20 border-accent/30',
-      features: ['Invoice management', 'Payment processing', 'Vendor relations']
+      features: ['Invoice management', 'Payment processing', 'Vendor relations'],
+      disabled: false // Enable all roles since dashboards exist
     },
     { 
       id: 'admin', 
@@ -44,133 +45,20 @@ export const RoleSelector = () => {
       description: 'Oversee platform operations and user management', 
       icon: Shield, 
       color: 'from-warning/20 to-destructive/20 border-warning/30',
-      features: ['User management', 'System monitoring', 'Analytics dashboard']
+      features: ['User management', 'System monitoring', 'Analytics dashboard'],
+      disabled: false // Enable all roles since dashboards exist
     }
   ];
 
-  const onSelectRole = async (roleKey) => {
+  const onSelectRole = (roleKey) => {
     setSelectedRole(roleKey);
     setIsLoading(true);
 
-    try {
-      // Check if user already has a session
-      const existingSession = getUserSession();
-      
-      if (existingSession) {
-        // Update existing session with new role
-        const updatedSession = { ...existingSession, role: roleKey };
-        saveUserSession(updatedSession, roleKey);
-        
-        toast({ 
-          title: "Role Updated", 
-          description: `Switched to ${roles.find(r => r.id === roleKey)?.title} dashboard.` 
-        });
-        
-        // Navigate directly to dashboard
-        navigate(`/dashboard/${roleKey}`);
-        return;
-      }
+    // Store selected role for later use
+    localStorage.setItem('selectedRole', roleKey);
 
-      // Store selected role for later use
-      localStorage.setItem('selectedRole', roleKey);
-
-      // Try to authenticate with ICP and set role
-      try {
-        const { actor } = await loginWithII();
-        
-        // Check if user already has a role
-        const existingRole = await actor.get_my_role();
-        
-        if (!existingRole.length) {
-          // Set the selected role if user doesn't have one
-          await actor.set_my_role(roleVariant(roleKey));
-        }
-        
-        // Save session
-        const userData = {
-          id: 'icp_user',
-          authType: 'icp',
-          role: roleKey,
-          name: 'Internet Identity User'
-        };
-        
-        saveUserSession(userData, roleKey);
-        
-        toast({ 
-          title: "Success!", 
-          description: `Welcome to your ${roles.find(r => r.id === roleKey)?.title} dashboard!` 
-        });
-        
-        // Navigate to appropriate dashboard
-        navigate(`/dashboard/${roleKey}`);
-        return;
-        
-      } catch (icpError) {
-        console.warn('ICP authentication failed or cancelled:', icpError);
-        
-        // If ICP auth fails, redirect to role-specific login
-        toast({ 
-          title: "Sign In Required", 
-          description: `Please sign in to access your ${roles.find(r => r.id === roleKey)?.title} account.` 
-        });
-        
-        navigate(`/login/${roleKey}`);
-        return;
-      }
-
-    } catch (error) {
-      console.error('Role selection failed:', error);
-      toast({ 
-        title: "Error", 
-        description: "Failed to set role. Please try again.", 
-        variant: "destructive" 
-      });
-    } finally {
-      setSelectedRole(null);
-      setIsLoading(false);
-    }
-  };
-
-  const handleICPAuth = async () => {
-    setIsLoading(true);
-    try {
-      const { actor } = await loginWithII();
-      const roleOpt = await actor.get_my_role();
-      
-      if (roleOpt.length) {
-        const roleKey = getRoleKey(roleOpt[0]);
-        
-        const userData = {
-          id: 'icp_user',
-          authType: 'icp',
-          role: roleKey,
-          name: 'Internet Identity User'
-        };
-        
-        saveUserSession(userData, roleKey);
-        
-        toast({ 
-          title: "Welcome back!", 
-          description: "Signed in with Internet Identity successfully!" 
-        });
-        
-        // Navigate to user's existing role dashboard
-        navigate(`/dashboard/${roleKey}`);
-      } else {
-        toast({ 
-          title: "Welcome!", 
-          description: "Please select your role below to continue." 
-        });
-      }
-    } catch (error) {
-      console.error('ICP authentication failed:', error);
-      toast({ 
-        title: "Note", 
-        description: "ICP authentication was cancelled or failed. You can still proceed by selecting a role below." 
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    // Navigate directly to the appropriate login page
+    navigate(`/login/${roleKey}`);
   };
 
   return (
@@ -182,27 +70,8 @@ export const RoleSelector = () => {
             Welcome to Twinvest
           </h1>
           <p className="text-muted-foreground text-lg">
-            Select your role to access the appropriate dashboard
+            Choose your role to access the appropriate dashboard
           </p>
-          
-          {/* ICP Identity Option */}
-          <div className="flex justify-center mt-6">
-            <Button 
-              variant="outline" 
-              onClick={handleICPAuth} 
-              disabled={isLoading} 
-              className="hover-ball border-primary/30"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Connecting...
-                </>
-              ) : (
-                'Continue with Internet Identity'
-              )}
-            </Button>
-          </div>
         </div>
 
         {/* Role Cards */}
@@ -210,48 +79,55 @@ export const RoleSelector = () => {
           {roles.map((role) => {
             const Icon = role.icon;
             const isCurrentlyLoading = selectedRole === role.id && isLoading;
+            const isDisabled = role.disabled;
             
             return (
               <Card
                 key={role.id}
-                className={`cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-105 bg-gradient-to-br ${role.color} ${
+                className={`cursor-pointer transition-all duration-300 bg-gradient-to-br ${role.color} ${
                   isCurrentlyLoading ? 'opacity-50' : ''
+                } ${
+                  isDisabled ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-elegant hover:scale-105'
                 }`}
-                onClick={() => !isLoading && onSelectRole(role.id)}
+                onClick={() => !isLoading && !isDisabled && onSelectRole(role.id)}
               >
                 <CardHeader className="text-center pb-4">
                   <div className="mx-auto w-16 h-16 rounded-full bg-background/80 flex items-center justify-center mb-4">
                     {isCurrentlyLoading ? (
                       <Loader2 className="h-8 w-8 animate-spin" />
                     ) : (
-                      <Icon className="h-8 w-8" />
+                      <Icon className={`h-8 w-8 ${isDisabled ? 'text-muted-foreground' : ''}`} />
                     )}
                   </div>
-                  <CardTitle className="text-xl mb-2">{role.title}</CardTitle>
-                  <CardDescription className="text-sm">{role.description}</CardDescription>
+                  <CardTitle className={`text-xl mb-2 ${isDisabled ? 'text-muted-foreground' : ''}`}>
+                    {role.title}
+                  </CardTitle>
+                  <CardDescription className={`text-sm ${isDisabled ? 'text-muted-foreground/60' : ''}`}>
+                    {role.description}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-2 mb-4">
                     {role.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-center text-xs text-muted-foreground">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full mr-2 flex-shrink-0" />
+                      <div key={idx} className={`flex items-center text-xs ${isDisabled ? 'text-muted-foreground/60' : 'text-muted-foreground'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full mr-2 flex-shrink-0 ${isDisabled ? 'bg-muted-foreground/60' : 'bg-primary'}`} />
                         {feature}
                       </div>
                     ))}
                   </div>
                   <Button
-                    variant="gradient"
+                    variant={isDisabled ? "outline" : "gradient"}
                     className="w-full"
                     onClick={(e) => { 
                       e.stopPropagation(); 
-                      if (!isLoading) onSelectRole(role.id); 
+                      if (!isLoading && !isDisabled) onSelectRole(role.id); 
                     }}
-                    disabled={isLoading}
+                    disabled={isLoading || isDisabled}
                   >
                     {isCurrentlyLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Setting up...
+                        Redirecting...
                       </>
                     ) : (
                       'Enter Dashboard'
@@ -267,16 +143,19 @@ export const RoleSelector = () => {
         <div className="text-center space-y-4 pt-8 border-t border-border">
           <p className="text-sm text-muted-foreground">Already have an account?</p>
           <div className="flex justify-center gap-4">
-            <Link to="/login">
-              <Button variant="outline" className="hover-ball">
-                Sign In
-              </Button>
-            </Link>
-            <Link to="/signup">
-              <Button className="hero-button">
-                Create Account
-              </Button>
-            </Link>
+            <Button 
+              onClick={() => navigate('/signin')}
+              variant="outline" 
+              className="hover-ball"
+            >
+              Sign In
+            </Button>
+            <Button 
+              onClick={() => navigate('/signup')}
+              className="hero-button"
+            >
+              Create Account
+            </Button>
           </div>
         </div>
 
