@@ -26,9 +26,11 @@ module {
     public type ProfileData = {
         name: ?Text;
         company: ?Text;
-        wallet_address: ?Text;
+        wallet_address: ?Text; // This can be used for Bitcoin address
         phone: ?Text;
         country: ?Text;
+        skills: ?Text; // New field
+        experience: ?Text; // New field
     };
 
     // === KYC & COMPLIANCE ===
@@ -61,6 +63,7 @@ module {
     // === INVESTMENT & PORTFOLIO ===
     public type Investment = {
         id: Text;
+        projectId: Nat; // Added projectId
         investor: Principal;
         invoice_id: Text;
         amount_invested: Nat;
