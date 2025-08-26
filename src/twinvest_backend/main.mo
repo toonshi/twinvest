@@ -1,179 +1,154 @@
-import Debug "mo:base/Debug";
+import Principal "mo:base/Principal";
+import Time "mo:base/Time";
 import HashMap "mo:base/HashMap";
 import Text "mo:base/Text";
-import Time "mo:base/Time";
-import Nat "mo:base/Nat";
-import Nat32 "mo:base/Nat32";
-import Iter "mo:base/Iter";
-import Array "mo:base/Array";
+import Debug "mo:base/Debug";
+import Error "mo:base/Error";
 
-actor Twinvest {
+// Import shared types
+import Types "./types";
 
-  // USER TYPES MODEL
-  public type Role = {
-    #freelancer;
-    #client;
-    #investor;
+actor TwinvestBackend {
+
+  // === STATE ===
+
+  // Remote role registry canister alias — let dfx replace this at deploy time.
+  private let role_registry : actor {
+    get_user_role : (Principal) -> async ?Types.Role;
+    register_user : (Principal, Types.Role) -> async ();
+  } = actor "role_registry";
+
+  // Local storage for user profiles, keyed by Principal.
+  private var user_profiles =
+    HashMap.HashMap<Principal, Types.UserProfile>(0, Principal.equal, Principal.hash);
+
+  // === HELPER (synchronous, safe for queries) ===
+
+  // Return a plain ApiResult (no async/await here). Query bodies must return plain T.
+  private func get_user_profile(p: Principal) : Types.ApiResult<Types.UserProfile> {
+    switch (user_profiles.get(p)) {
+      case (null) { #err(#not_found("User profile not found.")) };
+      case (?profile) { #ok(profile) };
+    }
   };
 
-  public type User = {
-    id: Text;
-    username: Text;
-    role: Role;
-    btcAddress: Text;
-    joined: Time.Time;
-  };
+  // === PUBLIC API - UPDATES (may await) ===
 
-  // PROJECT TYPES
-  public type ProjectStatus = {
-    #Open;
-    #InProgress;
-    #Completed;
-    #Funded;
-  };
-
-  public type Project = {
-    id: Nat;
-    clientId: Text;
-    title: Text;
-    details: Text;
-    status: ProjectStatus;
-    createdAt: Time.Time;
-  };
-
-  public type ProjectBid = {
-    freelancerId: Text;
-    projectId: Nat;
-    message: Text;
-    createdAt: Time.Time;
-  };
-
-  public type ProjectInvestment = {
-    investorId: Text;
-    projectId: Nat;
-    amount: Nat;
-    investedAt: Time.Time;
-  };
-
-  // HASH FUNCTIONS
-  private func textHash(t: Text): Nat32 {
-    Text.hash(t)
-  };
-  private func natHash(n: Nat): Nat32 {
-    Nat32.fromNat(n)
-  };
-
-  // STORAGE
-  private var users = HashMap.HashMap<Text, User>(100, Text.equal, textHash);
-  private var projects = HashMap.HashMap<Nat, Project>(100, Nat.equal, natHash);
-  private var projectBids = HashMap.HashMap<Nat, [ProjectBid]>(100, Nat.equal, natHash);
-  private var projectInvestments = HashMap.HashMap<Nat, [ProjectInvestment]>(100, Nat.equal, natHash);
-
-  private var nextProjectId: Nat = 1;
-
- // REGISTER USER
-public func register(id: Text, username: Text, role: Role, btcAddress: Text): async Text {
-  if (users.get(id) != null) {
-    return "User already exists.";
-  };
-  let user: User = {
-    id = id;
-    username = username;
-    role = role;
-    btcAddress = btcAddress;
-    joined = Time.now();
-  };
-  users.put(id, user);
-  return "Registered successfully.";
-};
-  // LOGIN SIMULATION
-  public query func login(id: Text): async ?User {
-    users.get(id)
-  };
-
-  // CREATE PROJECT (CLIENT)
-  public func createProject(clientId: Text, title: Text, details: Text): async Text {
-    let project: Project = {
-      id = nextProjectId;
-      clientId = clientId;
-      title = title;
-      details = details;
-      status = #Open;
-      createdAt = Time.now();
-    };
-    projects.put(nextProjectId, project);
-    nextProjectId += 1;
-    return "Project created.";
-  };
-
-  // GET CLIENT'S PROJECTS
-  public query func getClientProjects(clientId: Text): async [Project] {
-    let allProjects = projects.vals();
-    let filtered = Iter.filter<Project>(allProjects, func(p: Project): Bool {
-      p.clientId == clientId
-    });
-    Iter.toArray(filtered)
-  };
-
-  // FREELANCER BIDS ON PROJECT
-  public func bidOnProject(projectId: Nat, freelancerId: Text, message: Text): async Text {
-    let bid: ProjectBid = {
-      freelancerId = freelancerId;
-      projectId = projectId;
-      message = message;
-      createdAt = Time.now();
-    };
-    let existingBids = switch (projectBids.get(projectId)) {
-      case null { [] };
-      case (?bids) { bids };
-    };
-    projectBids.put(projectId, Array.append<ProjectBid>(existingBids, [bid]));
-    return "Bid submitted.";
-  };
-
-  // INVESTOR INVESTS IN PROJECT
-  public func investInProject(projectId: Nat, investorId: Text, amount: Nat): async Text {
-    let investment: ProjectInvestment = {
-      investorId = investorId;
-      projectId = projectId;
-      amount = amount;
-      investedAt = Time.now();
-    };
-    let existingInvestments = switch (projectInvestments.get(projectId)) {
-      case null { [] };
-      case (?inv) { inv };
-    };
-    projectInvestments.put(projectId, Array.append<ProjectInvestment>(existingInvestments, [investment]));
-
-    // Update project status
-    switch (projects.get(projectId)) {
-      case null { return "Project not found." };
-      case (?p) {
-        let updated: Project = {
-          id = p.id;
-          clientId = p.clientId;
-          title = p.title;
-          details = p.details;
-          status = #Funded;
-          createdAt = p.createdAt;
+  // Register a new user with a specific role. Update function may await.
+  public shared ({ caller }) func register(role: Types.Role) : async Types.ApiResult<()> {
+    switch (user_profiles.get(caller)) {
+      case (?_) { return #err(#invalid_input("User already registered.")) };
+      case (null) {
+        // Inter-canister call must be in an update function
+        try {
+          await role_registry.register_user(caller, role);
+        } catch (err) {
+          Debug.print("⚠️ register: role_registry RPC failed: " # Error.message(err));
+          // Decide: fail registration if registry unavailable, or continue.
+          // Here we fail safely so caller knows registration didn't finish.
+          return #err(#invalid_input("Failed to register role; try again later."));
         };
-        projects.put(projectId, updated);
-      };
-    };
 
-    return "Investment recorded.";
-  };
-
-  // GET INVESTOR INVESTMENTS
-  public query func getInvestments(investorId: Text): async [ProjectInvestment] {
-    var result: [ProjectInvestment] = [];
-    for (investments in projectInvestments.vals()) {
-      for (investment in investments.vals()) {
-        if (investment.investorId == investorId) {
-          result := Array.append<ProjectInvestment>(result, [investment]);
+        let new_profile : Types.UserProfile = {
+          principal = caller;
+          role = role;
+          email = null;
+          created_at = Time.now();
+          kyc_status = #pending;
+          profile_data = null;
         };
-      };
-    };
-    result
+
+        user_profiles.put(caller, new_profile);
+        return #ok(());
+      }
+    }
   };
-};
+
+  // Update the current user's profile data.
+  public shared ({ caller }) func updateMyProfile(data: Types.ProfileData) : async Types.ApiResult<()> {
+    switch (user_profiles.get(caller)) {
+      case (null) { return #err(#not_found("User profile not found.")) };
+      case (?profile) {
+        let updated_profile : Types.UserProfile = {
+          principal = profile.principal;
+          role = profile.role;
+          email = profile.email;
+          created_at = profile.created_at;
+          kyc_status = profile.kyc_status;
+          profile_data = ?data;
+        };
+        user_profiles.put(caller, updated_profile);
+        return #ok(());
+      }
+    }
+  };
+
+  // Allow a user to submit their KYC for review.
+  public shared ({ caller }) func submitKycApplication() : async Types.ApiResult<()> {
+    switch (user_profiles.get(caller)) {
+      case (null) { return #err(#not_found("User profile not found.")) };
+      case (?profile) {
+        let updated_profile : Types.UserProfile = {
+          principal = profile.principal;
+          role = profile.role;
+          email = profile.email;
+          created_at = profile.created_at;
+          kyc_status = #in_review;
+          profile_data = profile.profile_data;
+        };
+        user_profiles.put(caller, updated_profile);
+        return #ok(());
+      }
+    }
+  };
+
+  // Allow an admin to update a user's KYC status.
+  // This must be an update function because we need to await the remote role_registry.
+  public shared ({ caller }) func updateKycStatus(user: Principal, status: Types.KYCStatus) : async Types.ApiResult<()> {
+    // Check admin role via role_registry (inter-canister call).
+    // Wrap in try/catch so we don't trap when role_registry is unavailable.
+    var is_caller_admin : Bool = false;
+    try {
+      let role_opt = await role_registry.get_user_role(caller);
+      is_caller_admin := (role_opt == ?#admin);
+    } catch (err) {
+      Debug.print("⚠️ updateKycStatus: role_registry unreachable: " # Error.message(err));
+      // If registry is down, treat caller as non-admin (fail safe)
+      is_caller_admin := false;
+    };
+
+    if (not is_caller_admin) {
+      return #err(#unauthorized);
+    };
+
+    switch (user_profiles.get(user)) {
+      case (null) { return #err(#not_found("User to update not found.")) };
+      case (?profile) {
+        let updated_profile : Types.UserProfile = {
+          principal = profile.principal;
+          role = profile.role;
+          email = profile.email;
+          created_at = profile.created_at;
+          kyc_status = status;
+          profile_data = profile.profile_data;
+        };
+        user_profiles.put(user, updated_profile);
+        return #ok(());
+      }
+    }
+  };
+
+  // === PUBLIC API - QUERIES (no await inside bodies) ===
+
+  // Get the profile of the caller.
+  // Note: this is a query; signature is `: async T` but body must be plain T.
+  public query ({ caller }) func getMyProfile() : async Types.ApiResult<Types.UserProfile> {
+    get_user_profile(caller) // plain return value; compiler lifts to async
+  };
+
+  // Get the profile of any user.
+  public query func getProfile(id: Principal) : async Types.ApiResult<Types.UserProfile> {
+    get_user_profile(id)
+  };
+
+}
