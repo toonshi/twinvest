@@ -3,6 +3,7 @@ import Time "mo:base/Time";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Buffer "mo:base/Buffer";
+import Int "mo:base/Int";
 
 module {
     // === IDENTITY & ROLES ===

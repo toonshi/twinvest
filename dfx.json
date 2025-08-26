@@ -2,7 +2,8 @@
   "canisters": {
     "twinvest_backend": {
       "main": "src/twinvest_backend/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "dependencies": ["role_registry"]
     },
     "role_registry": {
       "type": "motoko",
