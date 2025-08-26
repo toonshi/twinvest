@@ -57,3 +57,4 @@ actor RoleRegistry {
         user_roles := HashMap.fromIter(Iter.fromArray(roles_entries), 0, Principal.equal, Principal.hash);
     };
 }
+

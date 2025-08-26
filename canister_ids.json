@@ -1,0 +1,11 @@
+{
+  "role_registry": {
+    "ic": "tkjih-lqaaa-aaaan-qz6ba-cai"
+  },
+  "twinvest_backend": {
+    "ic": "tniot-giaaa-aaaan-qz6bq-cai"
+  },
+  "twinvest_frontend": {
+    "ic": "typ76-haaaa-aaaan-qz6ca-cai"
+  }
+}
