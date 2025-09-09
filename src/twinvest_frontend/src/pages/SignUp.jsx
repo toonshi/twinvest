@@ -9,6 +9,17 @@ import { Badge } from '@/components/ui/badge';
 import { Coins, Eye, EyeOff, ArrowLeft, User, Mail, Lock, Loader2, Users, TrendingUp, DollarSign, Shield } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
+import { twinvest_backend } from '@/lib/icp';
+
+const mapRoleStringToMotokoVariant = (roleString) => {
+  switch (roleString) {
+    case 'sme': return { freelancer: null };
+    case 'investor': return { investor: null };
+    case 'client': return { client: null };
+    case 'admin': return { admin: null };
+    default: return { investor: null }; // Default or error handling
+  }
+};
 
 const SignUp = () => {
   const [selectedRole, setSelectedRole] = useState(null);
@@ -91,7 +102,15 @@ const SignUp = () => {
         throw new Error('Please select a role');
       }
 
-      // Simulate successful registration
+      const motokoRole = mapRoleStringToMotokoVariant(selectedRole);
+      const emailArg = formData.email ? [formData.email] : []; // Use array for opt Text
+
+      const result = await twinvest_backend.registerUser(motokoRole, emailArg);
+
+      if ('err' in result) {
+        throw new Error(result.err.toString());
+      }
+
       toast({
         title: "Success",
         description: `${roles.find(r => r.id === selectedRole)?.title} account created successfully!`,
