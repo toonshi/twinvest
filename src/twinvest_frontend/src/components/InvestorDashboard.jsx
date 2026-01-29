@@ -1,4 +1,7 @@
 import React from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { twinvest_backend } from "@/lib/icp";
+import { useToast } from "./ui/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +10,52 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, DollarSign, Clock, Star, Eye, ShoppingCart, BarChart3, Wallet } from "lucide-react";
 
 export const InvestorDashboard = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const [newInvestor, setNewInvestor] = React.useState("");
+  const [newAmount, setNewAmount] = React.useState("");
+
+  // Fetch investments
+  const { data: investments, isLoading, isError } = useQuery({
+    queryKey: ["investments"],
+    queryFn: () => twinvest_backend.getInvestments(),
+  });
+
+  // Add investment mutation
+  const addInvestmentMutation = useMutation({
+    mutationFn: ({ investor, amount }) => twinvest_backend.addInvestment(investor, amount),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["investments"]);
+      toast({
+        title: "Investment Added!",
+        description: "Your new investment has been successfully recorded.",
+      });
+      setNewInvestor("");
+      setNewAmount("");
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: `Failed to add investment: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddInvestment = (e) => {
+    e.preventDefault();
+    if (!newInvestor || !newAmount) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide both investor name and amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+    addInvestmentMutation.mutate({ investor: newInvestor, amount: BigInt(newAmount) });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -88,6 +137,38 @@ export const InvestorDashboard = () => {
             </div>
           </div>
 
+          {/* Add Investment Form */}
+          <Card className="p-4">
+            <CardTitle className="mb-4">Add New Investment</CardTitle>
+            <form onSubmit={handleAddInvestment} className="space-y-4">
+              <div>
+                <label htmlFor="investor" className="block text-sm font-medium text-muted-foreground">Investor Name</label>
+                <input
+                  type="text"
+                  id="investor"
+                  value={newInvestor}
+                  onChange={(e) => setNewInvestor(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"
+                  placeholder="e.g., Alice Smith"
+                />
+              </div>
+              <div>
+                <label htmlFor="amount" className="block text-sm font-medium text-muted-foreground">Amount (Nat)</label>
+                <input
+                  type="number"
+                  id="amount"
+                  value={newAmount}
+                  onChange={(e) => setNewAmount(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm p-2"
+                  placeholder="e.g., 1000"
+                />
+              </div>
+              <Button type="submit" variant="gradient" disabled={addInvestmentMutation.isLoading}>
+                {addInvestmentMutation.isLoading ? "Adding..." : "Add Investment"}
+              </Button>
+            </form>
+          </Card>
+
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((item) => (
               <Card key={item} className="hover:shadow-elegant transition-all duration-300">
@@ -132,40 +213,29 @@ export const InvestorDashboard = () => {
         <TabsContent value="portfolio" className="space-y-4">
           <h3 className="text-lg font-semibold">My Investment Portfolio</h3>
           
+          {isLoading && <p>Loading investments...</p>}
+          {isError && <p className="text-red-500">Error loading investments.</p>}
+          {investments && investments.length === 0 && <p>No investments found.</p>}
+
           <div className="grid gap-4">
-            {[1, 2, 3, 4].map((item) => (
-              <Card key={item}>
+            {investments && investments.map((investment) => (
+              <Card key={investment.id.toString()}>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h4 className="font-semibold">Invoice NFT #{5000 + item}</h4>
-                      <p className="text-sm text-muted-foreground">DesignCorp Ltd • Purchased 15 days ago</p>
+                      <h4 className="font-semibold">Investment ID: {investment.id.toString()}</h4>
+                      <p className="text-sm text-muted-foreground">Investor: {investment.investor}</p>
                     </div>
-                    <Badge variant={item % 2 === 0 ? "success" : "secondary"}>
-                      {item % 2 === 0 ? "Paid" : "Active"}
-                    </Badge>
+                    <Badge variant="success">Active</Badge>
                   </div>
                   
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <span className="text-muted-foreground">Investment</span>
-                      <p className="font-semibold">${(18000 + item * 500).toLocaleString()}</p>
+                      <span className="text-muted-foreground">Amount</span>
+                      <p className="font-semibold">${investment.amount.toLocaleString()}</p>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Current Value</span>
-                      <p className="font-semibold">${(20000 + item * 600).toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Expected Return</span>
-                      <p className="font-semibold text-success">${(2000 + item * 100).toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Days to Maturity</span>
-                      <p className="font-semibold">{30 - item * 5} days</p>
-                    </div>
+                    {/* Add more details if available in your Investment type */}
                   </div>
-                  
-                  <Progress value={((30 - (30 - item * 5)) / 30) * 100} className="mt-4" />
                 </CardContent>
               </Card>
             ))}

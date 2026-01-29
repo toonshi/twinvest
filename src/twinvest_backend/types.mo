@@ -3,6 +3,7 @@ import Time "mo:base/Time";
 import Principal "mo:base/Principal";
 import Result "mo:base/Result";
 import Buffer "mo:base/Buffer";
+import Int "mo:base/Int";
 
 module {
     // === IDENTITY & ROLES ===
@@ -25,9 +26,11 @@ module {
     public type ProfileData = {
         name: ?Text;
         company: ?Text;
-        wallet_address: ?Text;
+        wallet_address: ?Text; // This can be used for Bitcoin address
         phone: ?Text;
         country: ?Text;
+        skills: ?Text; // New field
+        experience: ?Text; // New field
     };
 
     // === KYC & COMPLIANCE ===
@@ -60,6 +63,7 @@ module {
     // === INVESTMENT & PORTFOLIO ===
     public type Investment = {
         id: Text;
+        projectId: Nat; // Added projectId
         investor: Principal;
         invoice_id: Text;
         amount_invested: Nat;
@@ -98,16 +102,18 @@ module {
     // === INVOICE MARKETPLACE ===
     public type Invoice = {
         id: Text;
-        freelancer: Principal;  // Changed from borrower to freelancer
+        owner: Principal; // New field: current owner of the NFT
+        freelancer: Principal;
         invoice_number: Text;
         amount: Nat;
         due_date: Time.Time;
         created_at: Time.Time;
         description: Text;
-        client_info: ClientInfo;  // Changed from debtor_info to client_info
+        client_info: ClientInfo;
         financing_request: FinancingRequest;
         status: InvoiceStatus;
         risk_assessment: ?RiskAssessment;
+        metadata_uri: ?Text; // New field: URI for NFT metadata
     };
 
     public type ClientInfo = {  // Changed from DebtorInfo
